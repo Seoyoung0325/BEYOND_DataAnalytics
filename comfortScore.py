@@ -1,5 +1,17 @@
 import requests
 import json
+#착석가능성 계산함수
+def get_seating_score(congestion):
+    # ① 예외 처리: 예측값이 없으면(None) 똑같이 None 반환하여 에러 방지
+    if congestion is None:
+        return None
+
+    # ② 전원 착석 구간: 혼잡도 33.8% 이하 ➔ 무조건 1
+    if congestion <= 33.8:
+        return 1.0
+
+    # ③ 착석 비율 계산: 혼잡도가 높을수록 점수가 비례해서 감소
+    return round(33.8 / congestion,3)
 
 # ==========================================
 # 1. 쾌적도 계산 로직 함수 (기존 코드)
@@ -34,14 +46,16 @@ def calculate_comfort_score(api_data, user_switches):
     if user_switches.get('congestion'):
         congestion_val = api_data.get('congestionCarValue', 100)
         multiplier *= max(0.5, 1.0 - (congestion_val / 300))
-        
+     # main의 dataAnalytics 의 함수 사용
     if user_switches.get('seating'):
-        get_off_val = api_data.get('getOffCarValue', 10)
-        f_seating = 0.8 + 0.2 * (get_off_val / 100)
-        multiplier *= f_seating
+        c_val = predict_congestion('congestionCarValue')
+        seat_score = get_seating_score(c_val)
+        if seat_score is not None:
+            multiplier *= seat_score
 
     final_score = base_avg * multiplier * 100
     return round(final_score, 1)
+    
 
 
 # ==========================================
@@ -80,7 +94,6 @@ def get_sk_transit_data(app_key):
                 "transferCount": itinerary.get("transferCount"),
                 "facilityScore": 0.7,
                 "congestionCarValue": 135,#학습된 혼잡도 모델로 판단한 혼잡도 넣을 것
-                "getOffCarValue": 15
             }
             return extracted_data
         else:
