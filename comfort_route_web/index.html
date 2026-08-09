@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BEYOND – 경로추천</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+/* ── 기본 스타일 리셋 ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100vw; height: 100vh; overflow: hidden; background: #111c2e; font-family: 'Noto Sans KR', sans-serif; color: #1f2430; }
+
+.page { display: flex; width: 100vw; height: 100vh; position: absolute; inset: 0; }
+.page.hidden { display: none; }
+
+/* ── 좌측 사이드바 ── */
+.sidebar { width: 500px; min-width: 500px; height: 100vh; flex-shrink: 0; background: #4f566f; display: flex; flex-direction: column; overflow: hidden; z-index: 10; }
+.sidebar-inner { flex: 1; overflow-y: auto; padding: 0; display: flex; flex-direction: column; align-items: center; scrollbar-width: thin; scrollbar-color: #3a4156 transparent; }
+.sidebar-inner::-webkit-scrollbar { width: 4px; }
+.sidebar-inner::-webkit-scrollbar-thumb { background: #3a4156; }
+
+/* ── 1. 검색 영역 ── */
+.search-container { background: #3a4156; width: 500px; height: 200px; padding: 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 36px; flex-shrink: 0; }
+.search-inputs { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.search-line { display: flex; align-items: center; gap: 10px; width: 100%; }
+.search-row { flex: 1; display: flex; align-items: center; background: #d0d5e3; padding: 0 12px; height: 52px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.dot.red { background: #ff3b30; border: 1.5px solid #ff8a80; }
+.dot.green { background: #2feb25; border: 1.5px solid #b5fd93; }
+.search-input { flex: 1; background: transparent; border: none; outline: none; color: #1f2430; font-size: 14px; font-weight: 600; font-family: inherit; }
+.search-btn { background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+/* ── 2. 추천 출발 시간 배너 ── */
+.depart-row { display: flex; justify-content: space-between; align-items: center; background: #bcc2d4; width: 500px; height: 70px; border-radius: 10px; padding: 0 20px; margin-bottom: 36px; font-size: 13px; color: #2b303e; font-weight: 600; flex-shrink: 0; }
+.depart-row .time-val { color: #1f2430; font-weight: 800; font-size: 18px; }
+
+/* ── 동적 생성되는 경로 카드 동적 컨테이너 ── */
+#cards-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* ── 3. 경로 추천 카드 ── */
+.route-card { background: #d1d6e4; width: 500px; height: 250px; padding: 20px 16px; margin-bottom: 36px; cursor: pointer; color: #1f2430; border: 2px solid transparent; transition: border-color .2s; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; }
+.route-card:last-child { margin-bottom: 0; }
+.route-card.active { border-color: #2b569a; }
+.card-top { display: flex; justify-content: space-between; align-items: baseline; }
+.card-time { font-size: 36px; font-weight: 800; line-height: 1; }
+.card-time small { font-size: 14px; font-weight: 700; margin-left: 2px; }
+.card-score { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+.star { color: #f1b418; font-size: 15px; }
+.warn { color: #e53935; font-size: 15px; }
+
+/* 경로 세그먼트 바 양 끝 둥글게 양식 유지 */
+.route-segment-bar { display: flex; gap: 6px; height: 8px; margin-bottom: 12px; }
+.segment { height: 100%; }
+.segment:first-child { border-radius: 4px 0 0 4px; }
+.segment:last-child { border-radius: 0 4px 4px 0; }
+
+.card-body { display: flex; justify-content: space-between; gap: 12px; }
+.card-left { flex: 1.3; min-width: 0; }
+.card-detail-line { font-size: 12px; line-height: 1.7; white-space: nowrap; font-weight: 600; }
+.card-right { flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; padding-top: 2px; }
+.card-right-row { display: flex; gap: 12px; }
+.line-label { width: 55px; flex-shrink: 0; }
+
+/* ── 우측 지도 화면 ── */
+.map-area { flex: 1; height: 100vh; position: relative; background: #29436d; }
+.map-area iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: #294676; }
+
+/* ── 상세 경로 사이드바 ── */
+.back-btn { background: none; border: none; color: #ffffff; font-size: 13px; font-weight: 700; cursor: pointer; padding: 24px 16px 20px; }
+
+.timeline {
+  position: relative;
+  padding: 0 16px 0 36px;
+  width: 100%;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 6px;
+  bottom: 25px;
+  width: 2px;
+  background: #ffffff;
+  z-index: 1;
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: 45px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  margin-bottom: 30px;
+}
+.timeline-item:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.tl-left { position: absolute; left: -20px; top: 2px; z-index: 2; }
+.tl-dot { width: 10px; height: 10px; border-radius: 50%; background: #ffffff; }
+.tl-dot.hollow { background: #4f566f; border: 2px solid #ffffff; }
+.tl-content { padding-left: 4px; color: #ffffff; }
+.tl-name { font-size: 14px; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 4px; }
+.tl-sub { font-size: 12px; color: #e2e8f0; margin-top: 6px; line-height: 1.6; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="page" id="page-recommend">
+  <div class="sidebar">
+    <div class="sidebar-inner">
+
+      <div class="search-container">
+        <div class="search-inputs">
+            <div class="search-line"><span class="dot red"></span><div class="search-row"><input class="search-input" value="신사역"></div></div>
+            <div class="search-line"><span class="dot green"></span><div class="search-row"><input class="search-input" value="선릉역"></div></div>
+        </div>
+        <button class="search-btn"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></button>
+      </div>
+
+      <div class="depart-row"><span>추천출발 시간</span><span class="time-val">오전 9:00</span></div>
+
+      <!-- 백엔드 데이터를 기반으로 동적 생성되는 카드가 삽입될 영역 -->
+      <div id="cards-container"></div>
+
+    </div>
+  </div>
+
+  <div class="map-area">
+    <iframe id="map-recommend" src="map.html" onload="onMapLoaded()"></iframe>
+  </div>
+</div>
+
+<div class="page hidden" id="page-detail">
+  <div class="sidebar">
+    <div class="sidebar-inner">
+      <button class="back-btn" onclick="goBack()">← 뒤로</button>
+
+      <div class="timeline" id="timeline-container"></div>
+
+    </div>
+  </div>
+
+  <div class="map-area">
+    <iframe id="map-detail" src="map.html"></iframe>
+  </div>
+</div>
+
+<script>
+/* ── 백엔드 API에서 받게 되는 전체 데이터 구조 샘플 ── */
+const apiMockResponse = [
+  // 0번 경로 카드 데이터
+  {
+    duration: 22,
+    scoreText: '85점',
+    isStar: true,
+    detailInfo: {
+      time: '소요시간 : 22분(9시-9시 22분)',
+      walk: '도보시간 : 6분',
+      fare: '요금 : 1,400원',
+      transfer: '환승횟수 : 1회 (교대역)',
+      facility: '이동편의시설 : 엘리베이터 보유'
+    },
+    rightSummary: [
+      { line: '3호선', color: '#EF7C1C', station: '신사역' },
+      { line: '2호선', color: '#00A84D', station: '교대역(환승)' },
+      { line: '하차', color: '#1f2430', station: '선릉역' }
+    ],
+    segmentBar: [
+      { color: '#EF7C1C', flex: 4 },
+      { color: '#00A84D', flex: 6 }
+    ],
+    // 지도 렌더링용 좌표
+    start: [37.51633, 127.02023],
+    end: [37.50448, 127.04896],
+    stations: [[37.51433, 127.01140], [37.50481, 127.00494], [37.49341, 127.01422], [37.49795, 127.02762], [37.50062, 127.03645]],
+    segments: [
+      { lineName: '3호선', color: '#EF7C1C', path: [[37.51633, 127.02023], [37.51433, 127.01140], [37.50481, 127.00494], [37.49341, 127.01422]] },
+      { lineName: '2호선', color: '#00A84D', path: [[37.49341, 127.01422], [37.49795, 127.02762], [37.50062, 127.03645], [37.50448, 127.04896]] }
+    ],
+    // 상세 페이지 타임라인
+    timeline: [
+      { title: '신사역 (3호선 출발지)' },
+      { title: '고속터미널역 (3호선)', sub1: '혼잡도 : 75', sub2: '착석가능지수 : 40' },
+      { title: '교대역 (2호선 환승) <span style="color:#e53935;font-size:11px">⚠️</span>', sub1: '혼잡도 : 110', sub2: '착석가능지수 : 10' },
+      { title: '강남역 (2호선)', sub1: '혼잡도 : 140', sub2: '착석가능지수 : 0' },
+      { title: '선릉역 (도착지)', isEnd: true }
+    ]
+  },
+
+  // 1번 경로 카드 데이터
+  {
+    duration: 35,
+    scoreText: '40점',
+    isStar: false,
+    detailInfo: {
+      time: '소요시간 : 35분(9시-9시 35분)',
+      walk: '도보시간 : 8분',
+      fare: '요금 : 1,400원',
+      transfer: '환승횟수 : 2회 (고터, 선정릉)',
+      facility: '이동편의시설 : 에스컬레이터 점검중'
+    },
+    rightSummary: [
+      { line: '3호선', color: '#EF7C1C', station: '신사역' },
+      { line: '9호선', color: '#B5A27E', station: '고속터미널' },
+      { line: '수인분당', color: '#F5A200', station: '선정릉역' },
+      { line: '하차', color: '#1f2430', station: '선릉역' }
+    ],
+    segmentBar: [
+      { color: '#EF7C1C', flex: 4 },
+      { color: '#B5A27E', flex: 4 },
+      { color: '#F5A200', flex: 2 }
+    ],
+    // 지도 렌더링용 좌표
+    start: [37.51633, 127.02023],
+    end: [37.50448, 127.04896],
+    stations: [[37.50481, 127.00494], [37.50450, 127.02540], [37.51080, 127.04370]],
+    segments: [
+      { lineName: '3호선', color: '#EF7C1C', path: [[37.51633, 127.02023], [37.51433, 127.01140], [37.50481, 127.00494]] },
+      { lineName: '9호선', color: '#B5A27E', path: [[37.50481, 127.00494], [37.50450, 127.02540], [37.51080, 127.04370]] },
+      { lineName: '수인분당', color: '#F5A200', path: [[37.51080, 127.04370], [37.50448, 127.04896]] }
+    ],
+    // 상세 페이지 타임라인
+    timeline: [
+      { title: '신사역 (3호선 출발지)' },
+      { title: '고속터미널역 (9호선 환승) <span style="color:#e53935;font-size:11px">⚠️</span>', sub1: '혼잡도 : 130', sub2: '착석가능지수 : 0' },
+      { title: '신논현역 (9호선)', sub1: '혼잡도 : 95', sub2: '착석가능지수 : 15' },
+      { title: '선정릉역 (수인분당선 환승)', sub1: '혼잡도 : 80', sub2: '착석가능지수 : 30' },
+      { title: '선릉역 (도착지)', isEnd: true }
+    ]
+  }
+];
+
+let currentIdx = 0;
+
+/* ── 1. 백엔드 데이터로 경로 추천 카드 목록 동적 렌더링 ── */
+function renderRouteCards() {
+  const container = document.getElementById('cards-container');
+  let html = '';
+
+  apiMockResponse.forEach((data, idx) => {
+    const activeClass = idx === currentIdx ? 'active' : '';
+    const scoreIcon = data.isStar ? '<span class="star">★</span>' : '<span class="warn">⚠️</span>';
+    
+    // 세그먼트 바 HTML 생성
+    let barHtml = '';
+    data.segmentBar.forEach(bar => {
+      barHtml += `<div class="segment" style="background:${bar.color}; flex:${bar.flex};"></div>`;
+    });
+
+    // 우측 지하철 노선 요약 HTML 생성
+    let rightHtml = '';
+    data.rightSummary.forEach(row => {
+      rightHtml += `
+        <div class="card-right-row">
+          <span class="line-label" style="color:${row.color};">${row.line}</span>
+          <span>${row.station}</span>
+        </div>
+      `;
+    });
+
+    html += `
+      <div class="route-card ${activeClass}" id="card-${idx}" onclick="showDetail(${idx})" onmouseenter="updateMap(${idx})">
+        <div class="card-top">
+          <div class="card-time">${data.duration}<small>분</small></div>
+          <div class="card-score">쾌적도 점수 : ${data.scoreText} ${scoreIcon}</div>
+        </div>
+        <div class="route-segment-bar">${barHtml}</div>
+        <div class="card-body">
+          <div class="card-left">
+            <div class="card-detail-line">${data.detailInfo.time}</div>
+            <div class="card-detail-line">${data.detailInfo.walk}</div>
+            <div class="card-detail-line">${data.detailInfo.fare}</div>
+            <div class="card-detail-line">${data.detailInfo.transfer}</div>
+            <div class="card-detail-line">${data.detailInfo.facility}</div>
+          </div>
+          <div class="card-right">
+            ${rightHtml}
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+/* ── 2. 지도 동적 업데이트 함수 ── */
+function updateMap(idx) {
+  currentIdx = idx;
+  document.querySelectorAll('.route-card').forEach((c, i) => {
+    c.classList.toggle('active', i === idx);
+  });
+
+  const iframe = document.getElementById('map-recommend');
+  if (iframe && iframe.contentWindow) {
+    iframe.contentWindow.postMessage({
+      type: 'DRAW_ROUTE',
+      payload: apiMockResponse[idx]
+    }, '*');
+  }
+}
+
+/* ── 3. 상세 페이지 타임라인 동적 렌더링 ── */
+function renderTimeline(idx) {
+  const container = document.getElementById('timeline-container');
+  const items = apiMockResponse[idx].timeline;
+  
+  let html = '';
+  items.forEach(item => {
+    const dotClass = item.isEnd ? 'tl-dot hollow' : 'tl-dot';
+    
+    html += `
+      <div class="timeline-item">
+        <div class="tl-left">
+          <div class="${dotClass}"></div>
+        </div>
+        <div class="tl-content">
+          <div class="tl-name">${item.title}</div>
+          ${item.sub1 ? `<div class="tl-sub">${item.sub1}</div>` : ''}
+          ${item.sub2 ? `<div class="tl-sub">${item.sub2}</div>` : ''}
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+}
+
+function onMapLoaded() {
+  renderRouteCards(); // 최초 1회 카드 생성
+  updateMap(0);
+}
+
+function showDetail(idx) {
+  updateMap(idx);
+  renderTimeline(idx);
+
+  document.getElementById('page-recommend').classList.add('hidden');
+  document.getElementById('page-detail').classList.remove('hidden');
+
+  setTimeout(() => {
+    const detailIframe = document.getElementById('map-detail');
+    detailIframe.contentWindow.postMessage({
+      type: 'DRAW_ROUTE',
+      payload: apiMockResponse[idx]
+    }, '*');
+  }, 100);
+}
+
+function goBack() {
+  document.getElementById('page-detail').classList.add('hidden');
+  document.getElementById('page-recommend').classList.remove('hidden');
+}
+</script>
+</body>
+</html>
