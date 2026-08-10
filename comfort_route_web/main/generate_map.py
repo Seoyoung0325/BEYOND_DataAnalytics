@@ -49,5 +49,5 @@ m.get_root().html.add_child(folium.Element("""
 </style>
 """))
 
-m.save("map.html")
-print("map.html 생성 완료!")
+m.save("map_main.html")
+print("map_main.html 생성 완료!")
