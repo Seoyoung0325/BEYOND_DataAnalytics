@@ -1,0 +1,249 @@
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.app {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  position: relative;
+}
+
+/* ── 사이드바 ── */
+.sidebar {
+  width: 500px;
+  flex-shrink: 0;
+  background: #4f566f;
+  color: white;
+  display: flex;             
+  flex-direction: column;    
+  overflow-y: auto;
+  transition: margin-left 0.25s ease;
+}
+
+.sidebar.collapsed {
+  margin-left: -500px;
+}
+
+.toggle-btn {
+  position: absolute;
+  top: 50%;
+  left: 500px;
+  transform: translate(-50%, -50%);
+  width: 22px;
+  height: 44px;
+  border: none;
+  border-radius: 6px;
+  background: #D9D9D9;
+  color: #3C3C53;
+  cursor: pointer;
+  z-index: 10;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  transition: left 0.25s ease;
+}
+
+.sidebar.collapsed ~ .toggle-btn {
+  left: 0;
+}
+
+/* ── 지도 ── */
+.map-container {
+  flex: 1;
+  height: 100vh;
+}
+
+.map-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+/* ── 1. 검색 영역 (동료 코드 기준) ── */
+.search-container {
+  background: #3a4156;
+  width: 500px;
+  height: 200px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+.search-inputs {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.search-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.search-row {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: #d0d5e3;
+  padding: 0 12px;
+  height: 52px;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dot.red { background: #ff3b30; border: 1.5px solid #ff8a80; }
+.dot.green { background: #2feb25; border: 1.5px solid #b5fd93; }
+
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #1f2430;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.search-btn {
+  width: 34px;
+  height: 34px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  padding: 0;
+  flex-shrink: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+}
+
+.search-btn::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #d0d5e3;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.search-btn::after {
+  content: "";
+  position: absolute;
+  top: 18px;
+  left: 20px;
+  width: 6px;
+  height: 2px;
+  background: #d0d5e3;
+  border-radius: 2px;
+  transform: rotate(45deg);
+  transform-origin: left center;
+}
+
+/* ── 2. 쾌적도 지표 ── */
+.panel {
+  padding: 18px 20px;
+  background: #4f566f;
+}
+
+.panel-title {
+  margin: 0 0 12px 10px;
+  font-size: 20px;
+  font-weight: 500;
+  color: #D9D9D9;
+}
+
+.panel-card {
+  background: #D9D9D9;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.option-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.option-list label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #3C3C53;
+  cursor: pointer;
+}
+
+.option-list input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  accent-color: #3C3C53;
+  cursor: pointer;
+}
+
+/* ── 3. 출발 가능 시간 ── */
+.time-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.time-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.time-icon {
+  font-size: 15px;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.icon-spacer {
+  visibility: hidden;
+}
+
+.time-row input {
+  flex: 1;
+  border: none;
+  border-bottom: 1px solid #a9adc2;
+  background: transparent;
+  padding: 4px 2px;
+  font-size: 14px;
+  color: #3C3C53;
+}
+
+.suffix {
+  white-space: nowrap;
+  color: #3C3C53;
+  font-size: 13px;
+  flex-shrink: 0;
+}

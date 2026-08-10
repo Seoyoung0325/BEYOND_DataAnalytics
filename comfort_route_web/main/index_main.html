@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>지하철 쾌적 경로 탐색</title>
+  <link rel="stylesheet" href="style_main.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- 사이드바 -->
+    <aside class="sidebar" id="sidebar">
+
+      <div class="search-container">
+        <div class="search-inputs">
+          <div class="search-line">
+            <span class="dot red"></span>
+            <div class="search-row">
+              <input type="text" id="origin" class="search-input" placeholder="출발지 입력" />
+            </div>
+          </div>
+          <div class="search-line">
+            <span class="dot green"></span>
+            <div class="search-row">
+              <input type="text" id="destination" class="search-input" placeholder="도착지 입력" />
+            </div>
+          </div>
+        </div>
+        <button id="search-btn" class="search-btn" aria-label="경로 검색"></button>
+      </div>
+
+      <!-- 쾌적도 지표 -->
+      <section class="panel">
+        <h3 class="panel-title">쾌적도 지표</h3>
+        <div class="panel-card">
+          <ul class="option-list">
+            <li><label><input type="checkbox" checked /> 지하철 혼잡도</label></li>
+            <li><label><input type="checkbox" /> 소요시간</label></li>
+            <li><label><input type="checkbox" /> 도보시간</label></li>
+            <li><label><input type="checkbox" checked /> 요금</label></li>
+            <li><label><input type="checkbox" checked /> 환승횟수</label></li>
+            <li><label><input type="checkbox" /> 이동편의시설</label></li>
+            <li><label><input type="checkbox" /> 착석가능성</label></li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 출발 가능 시간 -->
+      <section class="panel">
+        <h3 class="panel-title">출발 가능 시간</h3>
+        <div class="panel-card time-card">
+          <div class="time-row">
+            <span class="time-icon">📅</span>
+            <input type="date" id="depart-date" />
+          </div>
+          <div class="time-row">
+            <span class="time-icon icon-spacer"></span>
+            <input type="time" id="time-from" />
+            <span class="suffix">부터</span>
+          </div>
+          <div class="time-row">
+            <span class="time-icon icon-spacer"></span>
+            <input type="time" id="time-to" />
+            <span class="suffix">까지</span>
+          </div>
+        </div>
+      </section>
+
+    </aside>
+
+    <!-- 사이드바 접기/펼치기 버튼 -->
+    <button id="toggle-btn" class="toggle-btn" aria-label="사이드바 접기">‹‹‹</button>
+
+    <!-- 지도 -->
+    <main class="map-container">
+      <iframe id="map-frame" class="map-frame" src="map_main.html" frameborder="0"></iframe>
+    </main>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
