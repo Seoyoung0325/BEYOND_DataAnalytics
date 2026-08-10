@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_2b04476b0ff190314cae6b7c1d9f023a {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+<style>
+  html, body, #map {
+    width: 100%; height: 100%;
+    margin: 0; padding: 0;
+    overflow: hidden;
+    background-color: #2a4067;
+  }
+  .leaflet-container { background: #2a4067 !important; }
+  .leaflet-tile {
+    opacity: 0.5 !important;
+    filter: sepia(100%) hue-rotate(180deg) saturate(300%) brightness(3.0) contrast(1.1) !important;
+  }
+  .leaflet-control-zoom, .leaflet-control-attribution { display: none !important; }
+</style>
+    
+            <div class="folium-map" id="map_2b04476b0ff190314cae6b7c1d9f023a" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_2b04476b0ff190314cae6b7c1d9f023a = L.map(
+                "map_2b04476b0ff190314cae6b7c1d9f023a",
+                {
+                    center: [37.5547, 126.9707],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 15,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_677319b1c9b0a7b13ed03da9b9b8b478 = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_677319b1c9b0a7b13ed03da9b9b8b478.addTo(map_2b04476b0ff190314cae6b7c1d9f023a);
+        
+    
+            var marker_bacbc42dfcf81268f6ed8d3d0c97392b = L.marker(
+                [37.5547, 126.9707],
+                {
+}
+            ).addTo(map_2b04476b0ff190314cae6b7c1d9f023a);
+        
+    
+            var div_icon_f81ad3b4ccbf4e734a6ae96ee239a301 = L.divIcon({
+  "html": "\n\u003cdiv style=\"display:flex;flex-direction:column;align-items:center;\"\u003e\n  \u003cdiv style=\"display:flex;overflow:hidden;border-radius:14px;\n              box-shadow:0 2px 8px rgba(0,0,0,.35);\"\u003e\n    \u003cdiv style=\"background:#e74c3c;color:#fff;padding:10px 20px;\n                font-weight:800;font-size:16px;white-space:nowrap;\"\u003e\ucd9c\ubc1c\u003c/div\u003e\n    \u003cdiv style=\"background:#5cb85c;color:#fff;padding:10px 20px;\n                font-weight:800;font-size:16px;white-space:nowrap;\"\u003e\ub3c4\ucc29\u003c/div\u003e\n  \u003c/div\u003e\n  \u003cdiv style=\"width:26px;height:16px;margin-top:-1px;\n              clip-path: polygon(0 0, 100% 0, 50% 100%);\n              background: linear-gradient(to right, #e74c3c 50%, #5cb85c 50%);\"\u003e\u003c/div\u003e\n\u003c/div\u003e\n",
+  "iconSize": [170, 85],
+  "iconAnchor": [85, 85],
+  "className": "empty",
+});
+        
+    
+                marker_bacbc42dfcf81268f6ed8d3d0c97392b.setIcon(div_icon_f81ad3b4ccbf4e734a6ae96ee239a301);
+            
+</script>
+</html>
