@@ -111,24 +111,58 @@
         
     
             tile_layer_677319b1c9b0a7b13ed03da9b9b8b478.addTo(map_2b04476b0ff190314cae6b7c1d9f023a);
-        
-    
-            var marker_bacbc42dfcf81268f6ed8d3d0c97392b = L.marker(
-                [37.5547, 126.9707],
-                {
+
+
+
+
+
+/*윤서영 추가 - 지도 클릭 이벤트 추가*/
+var clickState   = 'origin';
+var originMarker = null;
+var destMarker   = null;
+
+function makeClickIcon(label, color) {
+    return L.divIcon({
+        html: '<div style="position:relative;display:flex;flex-direction:column;align-items:center;">'
+            + '<div style="background:' + color + ';color:#fff;padding:6px 14px;'
+            + 'border-radius:8px;font-weight:800;font-size:13px;'
+            + 'font-family:sans-serif;box-shadow:0 3px 8px rgba(0,0,0,0.5);'
+            + 'white-space:nowrap;">' + label + '</div>'
+            + '<div style="width:0;height:0;border-left:6px solid transparent;'
+            + 'border-right:6px solid transparent;border-top:8px solid ' + color + ';'
+            + 'margin-top:-1px;"></div></div>',
+        iconSize:   [70, 36],
+        iconAnchor: [35, 36],
+        className:  'empty',
+    });
 }
-            ).addTo(map_2b04476b0ff190314cae6b7c1d9f023a);
-        
-    
-            var div_icon_f81ad3b4ccbf4e734a6ae96ee239a301 = L.divIcon({
-  "html": "\n\u003cdiv style=\"display:flex;flex-direction:column;align-items:center;\"\u003e\n  \u003cdiv style=\"display:flex;overflow:hidden;border-radius:14px;\n              box-shadow:0 2px 8px rgba(0,0,0,.35);\"\u003e\n    \u003cdiv style=\"background:#e74c3c;color:#fff;padding:10px 20px;\n                font-weight:800;font-size:16px;white-space:nowrap;\"\u003e\ucd9c\ubc1c\u003c/div\u003e\n    \u003cdiv style=\"background:#5cb85c;color:#fff;padding:10px 20px;\n                font-weight:800;font-size:16px;white-space:nowrap;\"\u003e\ub3c4\ucc29\u003c/div\u003e\n  \u003c/div\u003e\n  \u003cdiv style=\"width:26px;height:16px;margin-top:-1px;\n              clip-path: polygon(0 0, 100% 0, 50% 100%);\n              background: linear-gradient(to right, #e74c3c 50%, #5cb85c 50%);\"\u003e\u003c/div\u003e\n\u003c/div\u003e\n",
-  "iconSize": [170, 85],
-  "iconAnchor": [85, 85],
-  "className": "empty",
+
+map_2b04476b0ff190314cae6b7c1d9f023a.on('click', function(e) {
+    var lat = e.latlng.lat;
+    var lon = e.latlng.lng;
+
+    if (clickState === 'origin') {
+        if (originMarker) map_2b04476b0ff190314cae6b7c1d9f023a.removeLayer(originMarker);
+        originMarker = L.marker([lat, lon], { icon: makeClickIcon('출발', '#ff3b30') })
+                        .addTo(map_2b04476b0ff190314cae6b7c1d9f023a);
+        clickState = 'dest';
+        window.parent.postMessage({ type: 'SET_ORIGIN', lat: lat, lon: lon }, '*');
+
+    } else if (clickState === 'dest') {
+        if (destMarker) map_2b04476b0ff190314cae6b7c1d9f023a.removeLayer(destMarker);
+        destMarker = L.marker([lat, lon], { icon: makeClickIcon('도착', '#00A84D') })
+                      .addTo(map_2b04476b0ff190314cae6b7c1d9f023a);
+        clickState = 'done';
+        window.parent.postMessage({ type: 'SET_DEST', lat: lat, lon: lon }, '*');
+    }
 });
-        
-    
-                marker_bacbc42dfcf81268f6ed8d3d0c97392b.setIcon(div_icon_f81ad3b4ccbf4e734a6ae96ee239a301);
-            
+
+window.addEventListener('message', function(e) {
+    if (e.data && e.data.type === 'RESET_MAP') {
+        if (originMarker) { map_2b04476b0ff190314cae6b7c1d9f023a.removeLayer(originMarker); originMarker = null; }
+        if (destMarker)   { map_2b04476b0ff190314cae6b7c1d9f023a.removeLayer(destMarker);   destMarker   = null; }
+        clickState = 'origin';
+    }
+});
 </script>
 </html>

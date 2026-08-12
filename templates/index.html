@@ -119,8 +119,8 @@ html, body { width: 100vw; height: 100vh; overflow: hidden; background: #111c2e;
 
       <div class="search-container">
         <div class="search-inputs">
-            <div class="search-line"><span class="dot red"></span><div class="search-row"><input class="search-input" value="신사역"></div></div>
-            <div class="search-line"><span class="dot green"></span><div class="search-row"><input class="search-input" value="선릉역"></div></div>
+            <div class="search-line"><span class="dot red"></span><div class="search-row"><input class="search-input" value="" readonly></div></div>
+            <div class="search-line"><span class="dot green"></span><div class="search-row"><input class="search-input" value="" readonly></div></div>
         </div>
         <button class="search-btn"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></button>
       </div>
@@ -134,7 +134,7 @@ html, body { width: 100vw; height: 100vh; overflow: hidden; background: #111c2e;
   </div>
 
   <div class="map-area">
-    <iframe id="map-recommend" src="map.html" onload="onMapLoaded()"></iframe>
+    <iframe id="map-recommend" src="{{ url_for('static', filename='map.html') }}" onload="onMapLoaded()"></iframe>
   </div>
 </div>
 
@@ -149,103 +149,161 @@ html, body { width: 100vw; height: 100vh; overflow: hidden; background: #111c2e;
   </div>
 
   <div class="map-area">
-    <iframe id="map-detail" src="map.html"></iframe>
+    <iframe id="map-detail" src="{{ url_for('static', filename='map.html') }}"></iframe>
   </div>
 </div>
 
 <script>
-/* ── 백엔드 API에서 받게 되는 전체 데이터 구조 샘플 ── */
-const apiMockResponse = [
-  // 0번 경로 카드 데이터
-  {
-    duration: 22,
-    scoreText: '85점',
-    isStar: true,
-    detailInfo: {
-      time: '소요시간 : 22분(9시-9시 22분)',
-      walk: '도보시간 : 6분',
-      fare: '요금 : 1,400원',
-      transfer: '환승횟수 : 1회 (교대역)',
-      facility: '이동편의시설 : 엘리베이터 보유'
-    },
-    rightSummary: [
-      { line: '3호선', color: '#EF7C1C', station: '신사역' },
-      { line: '2호선', color: '#00A84D', station: '교대역(환승)' },
-      { line: '하차', color: '#1f2430', station: '선릉역' }
-    ],
-    segmentBar: [
-      { color: '#EF7C1C', flex: 4 },
-      { color: '#00A84D', flex: 6 }
-    ],
-    // 지도 렌더링용 좌표
-    start: [37.51633, 127.02023],
-    end: [37.50448, 127.04896],
-    stations: [[37.51433, 127.01140], [37.50481, 127.00494], [37.49341, 127.01422], [37.49795, 127.02762], [37.50062, 127.03645]],
-    segments: [
-      { lineName: '3호선', color: '#EF7C1C', path: [[37.51633, 127.02023], [37.51433, 127.01140], [37.50481, 127.00494], [37.49341, 127.01422]] },
-      { lineName: '2호선', color: '#00A84D', path: [[37.49341, 127.01422], [37.49795, 127.02762], [37.50062, 127.03645], [37.50448, 127.04896]] }
-    ],
-    // 상세 페이지 타임라인
-    timeline: [
-      { title: '신사역 (3호선 출발지)' },
-      { title: '고속터미널역 (3호선)', sub1: '혼잡도 : 75', sub2: '착석가능지수 : 40' },
-      { title: '교대역 (2호선 환승) <span style="color:#e53935;font-size:11px">⚠️</span>', sub1: '혼잡도 : 110', sub2: '착석가능지수 : 10' },
-      { title: '강남역 (2호선)', sub1: '혼잡도 : 140', sub2: '착석가능지수 : 0' },
-      { title: '선릉역 (도착지)', isEnd: true }
-    ]
-  },
+/*윤서영 추가 - 백엔드 연결*/
 
-  // 1번 경로 카드 데이터
-  {
-    duration: 35,
-    scoreText: '40점',
-    isStar: false,
-    detailInfo: {
-      time: '소요시간 : 35분(9시-9시 35분)',
-      walk: '도보시간 : 8분',
-      fare: '요금 : 1,400원',
-      transfer: '환승횟수 : 2회 (고터, 선정릉)',
-      facility: '이동편의시설 : 에스컬레이터 점검중'
-    },
-    rightSummary: [
-      { line: '3호선', color: '#EF7C1C', station: '신사역' },
-      { line: '9호선', color: '#B5A27E', station: '고속터미널' },
-      { line: '수인분당', color: '#F5A200', station: '선정릉역' },
-      { line: '하차', color: '#1f2430', station: '선릉역' }
-    ],
-    segmentBar: [
-      { color: '#EF7C1C', flex: 4 },
-      { color: '#B5A27E', flex: 4 },
-      { color: '#F5A200', flex: 2 }
-    ],
-    // 지도 렌더링용 좌표
-    start: [37.51633, 127.02023],
-    end: [37.50448, 127.04896],
-    stations: [[37.50481, 127.00494], [37.50450, 127.02540], [37.51080, 127.04370]],
-    segments: [
-      { lineName: '3호선', color: '#EF7C1C', path: [[37.51633, 127.02023], [37.51433, 127.01140], [37.50481, 127.00494]] },
-      { lineName: '9호선', color: '#B5A27E', path: [[37.50481, 127.00494], [37.50450, 127.02540], [37.51080, 127.04370]] },
-      { lineName: '수인분당', color: '#F5A200', path: [[37.51080, 127.04370], [37.50448, 127.04896]] }
-    ],
-    // 상세 페이지 타임라인
-    timeline: [
-      { title: '신사역 (3호선 출발지)' },
-      { title: '고속터미널역 (9호선 환승) <span style="color:#e53935;font-size:11px">⚠️</span>', sub1: '혼잡도 : 130', sub2: '착석가능지수 : 0' },
-      { title: '신논현역 (9호선)', sub1: '혼잡도 : 95', sub2: '착석가능지수 : 15' },
-      { title: '선정릉역 (수인분당선 환승)', sub1: '혼잡도 : 80', sub2: '착석가능지수 : 30' },
-      { title: '선릉역 (도착지)', isEnd: true }
-    ]
+/* 호선 색상 매핑*/
+const LINE_COLORS = {
+  '1호선': '#0052A4', '2호선': '#00A84D', '3호선': '#EF7C1C',
+  '4호선': '#00A5DE', '5호선': '#996CAC', '6호선': '#CD7C2F',
+  '7호선': '#747F00', '8호선': '#E6186C', '9호선': '#BDB092',
+  '수인분당선': '#F5A200', '신분당선': '#D4003B', '경의중앙선': '#77C4A3',
+};
+function getLineColor(line) {
+  return LINE_COLORS[line] || '#888888';
+}
+
+/* 오전/오후 표시*/
+function formatAmPm(hhmm) {
+  const [h, m] = hhmm.split(':').map(Number);
+  const ampm = h < 12 ? '오전' : '오후';
+  const hour = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${ampm} ${hour}:${String(m).padStart(2, '0')}`;
+}
+
+/* 백엔드 응답 → 카드 렌더링용 포맷 변환*/
+function convertRoute(r) {
+  const score     = Math.round(r.comfort_score);
+  const isStar    = score >= 60;
+  const scoreText = `${score}점`;
+  const duration  = Math.round(r.total_sec / 60);
+
+  // ── 호선 목록 추출 (중복 제거, 순서 유지) ──
+  const lines = [];
+  const seen  = new Set();
+  (r.cong_detail || []).forEach(seg => {
+    if (seg.line && !seen.has(seg.line)) {
+      seen.add(seg.line);
+      lines.push(seg.line);
+    }
+  });
+
+  // ── 세그먼트 바 (호선별 균등 배분) ──
+  const segmentBar = lines.map(line => ({
+    color: getLineColor(line),
+    flex:  Math.round(10 / Math.max(lines.length, 1)),
+  }));
+
+  // ── 우측 노선 요약 ──
+  const rightSummary = lines.map((line, i) => {
+    const firstSeg = (r.cong_detail || []).find(s => s.line === line);
+    return {
+      line,
+      color:   getLineColor(line),
+      station: firstSeg ? firstSeg.station_name : '',
+    };
+  });
+
+  // ── 상세 타임라인 ──
+  const detail = r.cong_detail || [];
+  const timeline = [];
+
+  // 출발지
+  timeline.push({ title: `${detail[0]?.station_name || '출발지'} (출발)` });
+
+  // 중간 역
+  detail.slice(1, -1).forEach(seg => {
+    const cong     = seg.congestion != null ? seg.congestion : null;
+    const seating  = cong != null
+      ? (cong <= 33.8 ? 1.0 : Math.round(33.8 / cong * 100) / 100)
+      : null;
+    const warn     = cong != null && cong >= 80
+      ? '<span style="color:#e53935;font-size:11px">⚠️</span>' : '';
+
+    timeline.push({
+      title: `${seg.station_name} (${seg.line}) ${warn}`,
+      sub1:  cong    != null ? `혼잡도 : ${cong.toFixed(1)}` : '혼잡도 : 데이터 없음',
+      sub2:  seating != null ? `착석가능지수 : ${seating.toFixed(2)}` : '',
+    });
+  });
+
+  // 도착지
+  if (detail.length > 1) {
+    timeline.push({ title: `${detail[detail.length - 1].station_name} (도착)`, isEnd: true });
   }
-];
 
+  // ── 지도용 좌표 (현재는 더미 — 추후 TMAP 경로 좌표로 교체) ──
+  const originCoord = JSON.parse(sessionStorage.getItem('originCoord') || 'null');
+  const destCoord   = JSON.parse(sessionStorage.getItem('destCoord')   || 'null');
+
+  return {
+    duration,
+    scoreText,
+    isStar,
+    detailInfo: {
+      time:     `소요시간 : ${duration}분`,
+      walk:     `도보시간 : ${Math.round(r.walk_sec / 60)}분`,
+      fare:     `요금 : ${r.fare?.toLocaleString() || 0}원`,
+      transfer: `환승횟수 : ${r.transfer_count}회`,
+      facility: `이동편의시설 점수 : ${(r.facility_score * 100).toFixed(0)}점`,
+    },
+    rightSummary,
+    segmentBar,
+    start:    originCoord ? [originCoord.lat, originCoord.lon] : [37.5547, 126.9707],
+    end:      destCoord   ? [destCoord.lat,   destCoord.lon]   : [37.4979, 127.0276],
+    stations: [],
+    segments: [],
+    timeline,
+    // 원본 데이터 보존
+    _raw: r,
+  };
+}
+
+/* sessionStorage에서 데이터 로드*/
+let apiData    = [];
 let currentIdx = 0;
+
+document.addEventListener('DOMContentLoaded', function() {
+  const raw         = sessionStorage.getItem('routes');
+  const optimalTime = sessionStorage.getItem('optimalTime') || '';
+
+  if (!raw) {
+    document.getElementById('cards-container').innerHTML =
+      '<p style="color:#fff;padding:20px;">경로 데이터가 없습니다. 다시 검색해주세요.</p>';
+    return;
+  }
+
+  // 백엔드 응답 → 카드 포맷 변환
+  const routes = JSON.parse(raw);
+  apiData = routes.map(convertRoute);
+
+const originStr = sessionStorage.getItem('origin');
+const destStr   = sessionStorage.getItem('destination');
+
+const inputs = document.querySelectorAll('.search-input');
+if (originStr && inputs[0]) inputs[0].value = originStr;
+if (destStr   && inputs[1]) inputs[1].value = destStr;
+
+  // 추천 출발 시간 표시
+  if (optimalTime) {
+    const timeEl = document.querySelector('.depart-row .time-val');
+    if (timeEl) timeEl.textContent = formatAmPm(optimalTime);
+  }
+});
+
+
+
 
 /* ── 1. 백엔드 데이터로 경로 추천 카드 목록 동적 렌더링 ── */
 function renderRouteCards() {
   const container = document.getElementById('cards-container');
   let html = '';
 
-  apiMockResponse.forEach((data, idx) => {
+  apiData.forEach((data, idx) => {
     const activeClass = idx === currentIdx ? 'active' : '';
     const scoreIcon = data.isStar ? '<span class="star">★</span>' : '<span class="warn">⚠️</span>';
     
@@ -289,7 +347,7 @@ function renderRouteCards() {
     `;
   });
 
-  container.innerHTML = html;
+  container.innerHTML = html || '<p style="color:#fff;padding:20px;">경로를 찾을 수 없습니다.</p>';
 }
 
 /* ── 2. 지도 동적 업데이트 함수 ── */
@@ -303,7 +361,7 @@ function updateMap(idx) {
   if (iframe && iframe.contentWindow) {
     iframe.contentWindow.postMessage({
       type: 'DRAW_ROUTE',
-      payload: apiMockResponse[idx]
+      payload: apiData[idx]
     }, '*');
   }
 }
@@ -311,12 +369,9 @@ function updateMap(idx) {
 /* ── 3. 상세 페이지 타임라인 동적 렌더링 ── */
 function renderTimeline(idx) {
   const container = document.getElementById('timeline-container');
-  const items = apiMockResponse[idx].timeline;
-  
   let html = '';
-  items.forEach(item => {
+  apiData[idx].timeline.forEach(item => {
     const dotClass = item.isEnd ? 'tl-dot hollow' : 'tl-dot';
-    
     html += `
       <div class="timeline-item">
         <div class="tl-left">
@@ -335,8 +390,17 @@ function renderTimeline(idx) {
 }
 
 function onMapLoaded() {
-  renderRouteCards(); // 최초 1회 카드 생성
-  updateMap(0);
+  // apiData가 준비됐을 때만 실행
+  if (apiData.length > 0) {
+    renderRouteCards();
+    updateMap(0);
+  } else {
+    // DOMContentLoaded보다 먼저 실행된 경우 잠깐 기다림
+    setTimeout(() => {
+      renderRouteCards();
+      updateMap(0);
+    }, 100);
+  }
 }
 
 function showDetail(idx) {
@@ -350,7 +414,7 @@ function showDetail(idx) {
     const detailIframe = document.getElementById('map-detail');
     detailIframe.contentWindow.postMessage({
       type: 'DRAW_ROUTE',
-      payload: apiMockResponse[idx]
+      payload: apiData[idx]
     }, '*');
   }, 100);
 }
