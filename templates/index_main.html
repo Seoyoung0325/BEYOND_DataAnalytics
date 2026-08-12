@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>지하철 쾌적 경로 탐색</title>
-  <link rel="stylesheet" href="style_main.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style_main.css') }}" />
 </head>
 <body>
   <div class="app">
@@ -17,13 +17,13 @@
           <div class="search-line">
             <span class="dot red"></span>
             <div class="search-row">
-              <input type="text" id="origin" class="search-input" placeholder="출발지 입력" />
+              <input type="text" id="origin" class="search-input" placeholder="지도를 클릭해 출발지 선택" readonly />
             </div>
           </div>
           <div class="search-line">
             <span class="dot green"></span>
             <div class="search-row">
-              <input type="text" id="destination" class="search-input" placeholder="도착지 입력" />
+              <input type="text" id="destination" class="search-input" placeholder="지도를 클릭해 도착지 선택" readonly />
             </div>
           </div>
         </div>
@@ -74,11 +74,11 @@
 
     <!-- 지도 -->
     <main class="map-container">
-      <iframe id="map-frame" class="map-frame" src="map_main.html" frameborder="0"></iframe>
+      <iframe id="map-frame" class="map-frame" src="{{ url_for('static', filename='map_main.html') }}" frameborder="0"></iframe>
     </main>
 
   </div>
 
-  <script src="script.js"></script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
