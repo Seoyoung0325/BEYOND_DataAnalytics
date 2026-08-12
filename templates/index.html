@@ -119,8 +119,8 @@ html, body { width: 100vw; height: 100vh; overflow: hidden; background: #111c2e;
 
       <div class="search-container">
         <div class="search-inputs">
-            <div class="search-line"><span class="dot red"></span><div class="search-row"><input class="search-input" value="신사역"></div></div>
-            <div class="search-line"><span class="dot green"></span><div class="search-row"><input class="search-input" value="선릉역"></div></div>
+            <div class="search-line"><span class="dot red"></span><div class="search-row"><input class="search-input" value="" readonly></div></div>
+            <div class="search-line"><span class="dot green"></span><div class="search-row"><input class="search-input" value="" readonly></div></div>
         </div>
         <button class="search-btn"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></button>
       </div>
@@ -267,7 +267,7 @@ function convertRoute(r) {
 let apiData    = [];
 let currentIdx = 0;
 
-(function loadFromSession() {
+document.addEventListener('DOMContentLoaded', function() {
   const raw         = sessionStorage.getItem('routes');
   const optimalTime = sessionStorage.getItem('optimalTime') || '';
 
@@ -281,12 +281,19 @@ let currentIdx = 0;
   const routes = JSON.parse(raw);
   apiData = routes.map(convertRoute);
 
+const originStr = sessionStorage.getItem('origin');
+const destStr   = sessionStorage.getItem('destination');
+
+const inputs = document.querySelectorAll('.search-input');
+if (originStr && inputs[0]) inputs[0].value = originStr;
+if (destStr   && inputs[1]) inputs[1].value = destStr;
+
   // 추천 출발 시간 표시
   if (optimalTime) {
     const timeEl = document.querySelector('.depart-row .time-val');
     if (timeEl) timeEl.textContent = formatAmPm(optimalTime);
   }
-})();
+});
 
 
 
@@ -383,8 +390,17 @@ function renderTimeline(idx) {
 }
 
 function onMapLoaded() {
-  renderRouteCards(); // 최초 1회 카드 생성
-  updateMap(0);
+  // apiData가 준비됐을 때만 실행
+  if (apiData.length > 0) {
+    renderRouteCards();
+    updateMap(0);
+  } else {
+    // DOMContentLoaded보다 먼저 실행된 경우 잠깐 기다림
+    setTimeout(() => {
+      renderRouteCards();
+      updateMap(0);
+    }, 100);
+  }
 }
 
 function showDetail(idx) {
