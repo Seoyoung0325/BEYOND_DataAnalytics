@@ -20,19 +20,21 @@ let destCoord   = null;   // { lat, lon }
 
 /** 지도(map_main.html iframe) → 부모 창 메시지 수신*/
 window.addEventListener('message', function(e) {
-    if (!e.data) return;
+  if (!e.data) return;
 
-    if (e.data.type === 'SET_ORIGIN') {
-        originCoord = { lat: e.data.lat, lon: e.data.lon };
-        document.getElementById('origin').value =
-            `${e.data.lat.toFixed(5)}, ${e.data.lon.toFixed(5)}`;
-    }
+  if (e.data.type === 'SET_ORIGIN') {
+    originCoord = { lat: e.data.lat, lon: e.data.lon };
+    document.getElementById('origin').value =
+      `${e.data.lat.toFixed(5)}, ${e.data.lon.toFixed(5)}`;
+    sessionStorage.setItem('originCoord', JSON.stringify(originCoord));  // ← 추가
+  }
 
-    if (e.data.type === 'SET_DEST') {
-        destCoord = { lat: e.data.lat, lon: e.data.lon };
-        document.getElementById('destination').value =
-            `${e.data.lat.toFixed(5)}, ${e.data.lon.toFixed(5)}`;
-    }
+  if (e.data.type === 'SET_DEST') {
+    destCoord = { lat: e.data.lat, lon: e.data.lon };
+    document.getElementById('destination').value =
+        `${e.data.lat.toFixed(5)}, ${e.data.lon.toFixed(5)}`;
+    sessionStorage.setItem('destCoord', JSON.stringify(destCoord));  // ← 추가
+  }
 });
 
 /** 체크박스 상태 → user_switches 딕셔너리 */

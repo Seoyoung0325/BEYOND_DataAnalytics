@@ -15,7 +15,7 @@ html, body { width: 100vw; height: 100vh; overflow: hidden; background: #111c2e;
 .page.hidden { display: none; }
 
 /* ── 좌측 사이드바 ── */
-.sidebar { width: 500px; min-width: 500px; height: 100vh; flex-shrink: 0; background: #4f566f; display: flex; flex-direction: column; overflow: hidden; z-index: 10; }
+.sidebar { width: 500px; min-width: 500px; height: 100vh; flex-shrink: 0; background: #4f566f; display: flex; flex-direction: column; overflow: hidden; z-index: 10; overflow: visible; }
 .sidebar-inner { flex: 1; overflow-y: auto; padding: 0; display: flex; flex-direction: column; align-items: center; scrollbar-width: thin; scrollbar-color: #3a4156 transparent; }
 .sidebar-inner::-webkit-scrollbar { width: 4px; }
 .sidebar-inner::-webkit-scrollbar-thumb { background: #3a4156; }
@@ -44,13 +44,13 @@ html, body { width: 100vw; height: 100vh; overflow: hidden; background: #111c2e;
 }
 
 /* ── 3. 경로 추천 카드 ── */
-.route-card { background: #d1d6e4; width: 500px; height: 250px; padding: 20px 16px; margin-bottom: 36px; cursor: pointer; color: #1f2430; border: 2px solid transparent; transition: border-color .2s; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; }
+.route-card { background: #d1d6e4; width: 500px; height: 250px; padding: 20px 16px; margin-bottom: 36px; cursor: pointer; color: #1f2430; border: 2px solid transparent; transition: border-color .2s; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; overflow: visible; }
 .route-card:last-child { margin-bottom: 0; }
 .route-card.active { border-color: #2b569a; }
 .card-top { display: flex; justify-content: space-between; align-items: baseline; }
 .card-time { font-size: 36px; font-weight: 800; line-height: 1; }
 .card-time small { font-size: 14px; font-weight: 700; margin-left: 2px; }
-.card-score { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+.card-score { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 4px; overflow: visible; position: relative; }
 .star { color: #f1b418; font-size: 15px; }
 .warn { color: #e53935; font-size: 15px; }
 
@@ -66,6 +66,35 @@ html, body { width: 100vw; height: 100vh; overflow: hidden; background: #111c2e;
 .card-right { flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; padding-top: 2px; }
 .card-right-row { display: flex; gap: 12px; }
 .line-label { width: 55px; flex-shrink: 0; }
+
+/* 윤서영 추가 - 툴팁 */
+.tooltip-wrap .tooltip-box {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2430;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  z-index: 100;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.tooltip-wrap .tooltip-box::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #1f2430;
+}
+.tooltip-wrap:hover .tooltip-box { display: block; }
 
 /* ── 우측 지도 화면 ── */
 .map-area { flex: 1; height: 100vh; position: relative; background: #29436d; }
@@ -236,7 +265,6 @@ function convertRoute(r) {
     timeline.push({ title: `${detail[detail.length - 1].station_name} (도착)`, isEnd: true });
   }
 
-  // ── 지도용 좌표 (현재는 더미 — 추후 TMAP 경로 좌표로 교체) ──
   const originCoord = JSON.parse(sessionStorage.getItem('originCoord') || 'null');
   const destCoord   = JSON.parse(sessionStorage.getItem('destCoord')   || 'null');
 
@@ -256,7 +284,7 @@ function convertRoute(r) {
     start:    originCoord ? [originCoord.lat, originCoord.lon] : [37.5547, 126.9707],
     end:      destCoord   ? [destCoord.lat,   destCoord.lon]   : [37.4979, 127.0276],
     stations: [],
-    segments: [],
+    segments: r.map_segments || [],
     timeline,
     // 원본 데이터 보존
     _raw: r,
@@ -305,8 +333,22 @@ function renderRouteCards() {
 
   apiData.forEach((data, idx) => {
     const activeClass = idx === currentIdx ? 'active' : '';
-    const scoreIcon = data.isStar ? '<span class="star">★</span>' : '<span class="warn">⚠️</span>';
+    // 툴팁 메시지 생성
+    const starMsg = (data._raw && data._raw.avg_congestion != null)
+      ? ('쾌적도 최고 경로 (평균 혼잡도 ' + data._raw.avg_congestion.toFixed(1) + '%)')
+      : '쾌적도 최고 경로';
+
+    const warnSegs = (data._raw && data._raw.cong_detail)
+      ? data._raw.cong_detail.filter(function(s){ return s.congestion >= 80; })
+      : [];
+    const warnNames = [...new Set(warnSegs.map(function(s){ return s.line + ' ' + s.station_name; }))].slice(0, 2).join(', ');
+    const warnMsg = warnSegs.length > 0 ? ('혼잡구간 포함 (' + warnNames + ' 등)') : '주의 경로';
+
+    const scoreIcon = data.isStar
+      ? '<span class="tooltip-wrap"><span class="star">★</span><span class="tooltip-box">' + starMsg + '</span></span>'
+      : '<span class="tooltip-wrap"><span class="warn">⚠️</span><span class="tooltip-box">' + warnMsg + '</span></span>';
     
+
     // 세그먼트 바 HTML 생성
     let barHtml = '';
     data.segmentBar.forEach(bar => {

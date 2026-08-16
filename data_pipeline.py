@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-TMAP_API_KEY = os.getenv('TMAP_API_KEY_ysy')
+TMAP_API_KEY = os.getenv('TMAP_API_KEY_psy')
 
 
 
@@ -196,6 +196,12 @@ def lookup_congestion(station_name, line, direction, depart_hour, depart_minute,
     -------
     float : 혼잡도 (%), None = 데이터 없음
     """
+    # 호선명 정규화
+    match = re.search(r'(\d+)호선', line)
+    line  = f'{match.group(1)}호선' if match else line
+    # '경의중앙선(급행)' 같은 경우도 처리
+    line  = re.sub(r'\(.*?\)', '', line).strip()
+
     # 30분 슬롯으로 반올림
     raw_min = depart_hour * 60 + depart_minute
     slot    = round(raw_min / 30) * 30

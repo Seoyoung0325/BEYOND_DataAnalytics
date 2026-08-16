@@ -17,8 +17,22 @@ from data_pipeline import (
     analyze_current_congestion,
     check_route_congestion_warning,
     parse_time_to_minutes,
+    call_tmap_transit,
     TMAP_API_KEY,
 )
+
+
+LINE_COLORS = {
+    '1호선': '#0052A4', '2호선': '#00A84D', '3호선': '#EF7C1C',
+    '4호선': '#00A5DE', '5호선': '#996CAC', '6호선': '#CD7C2F',
+    '7호선': '#747F00', '8호선': '#E6186C', '9호선': '#BDB092',
+}
+
+def normalize_line(raw):
+    """'수도권2호선' → '2호선'"""
+    import re as _re
+    match = _re.search(r'(\d+)호선', raw)
+    return f'{match.group(1)}호선' if match else raw
 
 app = Flask(__name__)
 
@@ -103,10 +117,93 @@ def search():
     if not routes:
         return jsonify({'error': '경로를 찾을 수 없습니다.'}), 404
 
+    # TMAP 원본 응답에서 경로 좌표 추출
+    try:
+        raw_tmap    = call_tmap_transit(origin_lat, origin_lon, dest_lat, dest_lon, depart_dt)
+        itineraries = raw_tmap.get('metaData', {}).get('plan', {}).get('itineraries', [])
+    
+        def parse_linestring(ls):
+            """'lon,lat lon,lat ...' → [[lat,lon], ...] 변환"""
+            path = []
+            for pt in ls.strip().split(' '):
+                parts = pt.split(',')
+                if len(parts) == 2:
+                    try:
+                        lon2, lat2 = float(parts[0]), float(parts[1])
+                        if lat2 and lon2:
+                            path.append([lat2, lon2])
+                    except ValueError:
+                        pass
+            return path
+    
+        for i, r in enumerate(routes):
+            if i >= len(itineraries):
+                r['map_segments'] = []
+                continue
+
+            legs_coords = []
+            for leg in itineraries[i].get('legs', []):
+                mode = leg.get('mode', '')
+
+                if mode == 'WALK':
+                    # 도보: steps linestring 이어붙이기
+                    path = []
+                    for step in leg.get('steps', []):
+                        ls = step.get('linestring', '')
+                        if ls:
+                            path.extend(parse_linestring(ls))
+                    if not path:
+                        s, e = leg.get('start', {}), leg.get('end', {})
+                        try:
+                            path = [[float(s['lat']), float(s['lon'])],
+                                    [float(e['lat']), float(e['lon'])]]
+                        except (KeyError, ValueError, TypeError):
+                            path = []
+                    if len(path) >= 2:
+                        legs_coords.append({'color': '#aaaaaa', 'path': path, 'dash': True})
+
+                elif mode == 'BUS':
+                    # 버스: passShape.linestring 우선
+                    ls = leg.get('passShape', {}).get('linestring', '')
+                    path = parse_linestring(ls) if ls else []
+                    if not path:
+                        for s in leg.get('passStopList', {}).get('stationList', []):
+                            try:
+                                path.append([float(s['lat']), float(s['lon'])])
+                            except (KeyError, ValueError, TypeError):
+                                pass
+                    if len(path) >= 2:
+                        color = '#' + leg.get('routeColor', 'FF8C00')
+                        legs_coords.append({'color': color, 'path': path, 'dash': False})
+
+                elif mode == 'SUBWAY':
+                    # 지하철: passShape.linestring 우선
+                    ls = leg.get('passShape', {}).get('linestring', '')
+                    path = parse_linestring(ls) if ls else []
+                    if not path:
+                        stops = (leg.get('passStopList', {}).get('stations')
+                                 or leg.get('passStopList', {}).get('stationList', []))
+                        for s in stops:
+                            try:
+                                path.append([float(s['lat']), float(s['lon'])])
+                            except (KeyError, ValueError, TypeError):
+                                pass
+                    line  = normalize_line(leg.get('route', ''))
+                    color = LINE_COLORS.get(line, '#888888')
+                    if len(path) >= 2:
+                        legs_coords.append({'color': color, 'path': path, 'dash': False})
+
+            r['map_segments'] = legs_coords
+    
+    except Exception as e:
+        print(f'map_segments 추출 실패: {e}')
+        for r in routes:
+            r.setdefault('map_segments', [])
+
     # cong_detail 안의 datetime 등 직렬화 불가 타입 처리
     for r in routes:
         for seg in r.get('cong_detail', []):
-            seg.pop('elapsed_min', None)   # int라 괜찮지만 불필요시 제거
+            seg.pop('elapsed_min', None)
 
     return jsonify(routes)
 
