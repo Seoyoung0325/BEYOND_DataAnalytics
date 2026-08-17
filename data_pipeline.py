@@ -380,7 +380,31 @@ def parse_subway_legs(itinerary, depart_dt: datetime):
 
     return results
 
+def parse_bus_legs(itinerary):
+    """BUS 모드 leg만 추출 (혼잡도 데이터는 없지만, 향후 노선/정류장 기반 요소 확장용)"""
+    results = []
+    for leg in itinerary.get('legs', []):
+        if leg.get('mode') != 'BUS':
+            continue
+        results.append({
+            'route_name': leg.get('route', ''),
+            'start_name': leg.get('start', {}).get('name', ''),
+            'end_name':   leg.get('end', {}).get('name', ''),
+            'section_sec': leg.get('sectionTime', 0),
+        })
+    return results
 
+def classify_route_type(itinerary):
+    modes = {leg.get('mode') for leg in itinerary.get('legs', [])}
+    has_bus    = 'BUS' in modes
+    has_subway = 'SUBWAY' in modes
+    if has_bus and has_subway:
+        return 'mixed'
+    if has_bus:
+        return 'bus'
+    if has_subway:
+        return 'subway'
+    return 'other'  # 도보 전용 등
 
 
 """##8. 쾌적도 계산"""
@@ -428,7 +452,7 @@ def get_seating_score(congestion):
     return round(33.8 / congestion,3)
 
 # 4) 전체 파이프라인: TMAP 호출 → 파싱 → 쾌적도 점수화
-def calculate_comfort_score(api_data, user_switches):
+def calculate_comfort_score(api_data, user_switches, has_subway=True):
     """
     Parameters
     ----------
@@ -474,14 +498,17 @@ def calculate_comfort_score(api_data, user_switches):
     base_avg = sum(base_scores) / len(base_scores) if base_scores else 1.0
 
     multiplier = 1.0
-    if user_switches.get('congestion'):
-        congestion_val = api_data.get('congestionCarValue', 100)
-        multiplier *= max(0.5, 1.0 - (congestion_val / 300))
+    if has_subway:
+        if user_switches.get('congestion'):
+            congestion_val = api_data.get('congestionCarValue', 100)
+            multiplier *= max(0.5, 1.0 - (congestion_val / 300))
 
-    if user_switches.get('seating'):
-        seat_score = api_data.get('seatingScore')
-        if seat_score is not None:
-            multiplier *= seat_score
+        if user_switches.get('seating'):
+            seat_score = api_data.get('seatingScore')
+            if seat_score is not None:
+                multiplier *= seat_score
+    # has_subway=False(버스 전용)면 혼잡도/착석 지표를 아예 배율 계산에서 제외
+    # → base_avg(시간/도보/요금/환승/시설)만으로 쾌적도 산출
 
     final_score = base_avg * multiplier * 100
     return round(final_score, 1)
@@ -522,11 +549,13 @@ def get_route_with_comfort(origin_lat, origin_lon, dest_lat, dest_lon, depart_dt
 
         # 요약 지표 추출 (TMAP 직접 필드)
         summary = parse_route_summary(itin)
+        route_type = classify_route_type(itin)
+        has_subway = route_type in ('subway', 'mixed')
 
         # 지하철 구간 혼잡도 조회 (lookup 테이블)
         day_type    = ('평일' if depart_dt.weekday() < 5
-                        else '토요일' if depart_dt.weekday() == 5
-                        else '일요일')
+                       else '토요일' if depart_dt.weekday() == 5
+                       else '일요일')
         subway_legs = parse_subway_legs(itin, depart_dt)
         cong_total, cong_detail = score_route(
             subway_legs,
@@ -553,7 +582,7 @@ def get_route_with_comfort(origin_lat, origin_lon, dest_lat, dest_lon, depart_dt
             get_seating_score(seg['congestion'])
             for seg in cong_detail
             if seg['congestion'] is not None
-        ]
+        ] if has_subway else [] # 버스 전용이면 착석지수 계산 안 함
         avg_seat_score = (
             sum(seat_scores) / len(seat_scores)
             if seat_scores else None
@@ -576,6 +605,7 @@ def get_route_with_comfort(origin_lat, origin_lon, dest_lat, dest_lon, depart_dt
 
         results.append({
             'route_idx':      idx + 1,
+            'route_type':      route_type,               # 추가 — 'bus' / 'subway' / 'mixed'
             'comfort_score':  comfort_score,
             'avg_congestion': round(avg_cong, 1) if avg_cong is not None else None,
             **summary,
@@ -583,11 +613,19 @@ def get_route_with_comfort(origin_lat, origin_lon, dest_lat, dest_lon, depart_dt
             'cong_detail':    cong_detail,
         })
 
-    # 쾌적도 높은 순 정렬 (점수가 클수록 쾌적)
-    results.sort(key=lambda x: x['comfort_score'], reverse=True)
     return results
 
 
+def group_and_sort_routes(results):
+    """route_type별로 나누고, 각 그룹 안에서만 쾌적도순 정렬"""
+    grouped = {
+        'bus':    [r for r in results if r['route_type'] == 'bus'],
+        'subway': [r for r in results if r['route_type'] == 'subway'],
+        'mixed':  [r for r in results if r['route_type'] == 'mixed'],
+    }
+    for key in grouped:
+        grouped[key].sort(key=lambda x: x['comfort_score'], reverse=True)  # ★ 그룹별로 따로 정렬
+    return grouped
 
 
 def find_optimal_departure(routes, target_date, start_time, end_time,
