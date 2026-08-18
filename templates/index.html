@@ -21,21 +21,28 @@ html, body { width: 100vw; height: 100vh; overflow: hidden; background: #111c2e;
 .sidebar-inner::-webkit-scrollbar-thumb { background: #3a4156; }
 
 /* ── 1. 검색 영역 ── */
-.search-container { background: #3a4156; width: 500px; height: 200px; padding: 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 36px; flex-shrink: 0; }
-.search-inputs { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.search-container { background: #3a4156; width: 500px; height: 180px; padding: 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-shrink: 0; }
+.search-inputs { flex: 1; display: flex; flex-direction: column; gap: 10px; }
 .search-line { display: flex; align-items: center; gap: 10px; width: 100%; }
-.search-row { flex: 1; display: flex; align-items: center; background: #d0d5e3; padding: 0 12px; height: 52px; }
+.search-row { flex: 1; display: flex; align-items: center; background: #d0d5e3; padding: 0 12px; height: 48px; border-radius: 6px; }
 .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
 .dot.red { background: #ff3b30; border: 1.5px solid #ff8a80; }
 .dot.green { background: #2feb25; border: 1.5px solid #b5fd93; }
 .search-input { flex: 1; background: transparent; border: none; outline: none; color: #1f2430; font-size: 14px; font-weight: 600; font-family: inherit; }
-.search-btn { background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.search-btn { background: #2b569a; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 14px; border-radius: 8px; transition: background .2s; }
+.search-btn:hover { background: #1d3d70; }
 
 /* ── 2. 추천 출발 시간 배너 ── */
-.depart-row { display: flex; justify-content: space-between; align-items: center; background: #bcc2d4; width: 500px; height: 70px; border-radius: 10px; padding: 0 20px; margin-bottom: 36px; font-size: 13px; color: #2b303e; font-weight: 600; flex-shrink: 0; }
+.depart-row { display: flex; justify-content: space-between; align-items: center; background: #bcc2d4; width: 500px; height: 60px; border-radius: 10px; padding: 0 20px; margin-bottom: 16px; font-size: 13px; color: #2b303e; font-weight: 600; flex-shrink: 0; }
 .depart-row .time-val { color: #1f2430; font-weight: 800; font-size: 18px; }
 
-/* ── 동적 생성되는 경로 카드 동적 컨테이너 ── */
+/* ── 대중교통 유형 필터 탭 ── */
+.tab-container { display: flex; width: 500px; gap: 8px; margin-bottom: 20px; flex-shrink: 0; }
+.tab-btn { flex: 1; height: 42px; background: #3a4156; border: none; border-radius: 8px; color: #d0d5e3; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s; }
+.tab-btn:hover { background: #4a526b; }
+.tab-btn.active { background: #2b569a; color: #ffffff; }
+
+/* ── 동적 생성되는 경로 카드 컨테이너 ── */
 #cards-container {
   display: flex;
   flex-direction: column;
@@ -44,30 +51,35 @@ html, body { width: 100vw; height: 100vh; overflow: hidden; background: #111c2e;
 }
 
 /* ── 3. 경로 추천 카드 ── */
-.route-card { background: #d1d6e4; width: 500px; height: 250px; padding: 20px 16px; margin-bottom: 36px; cursor: pointer; color: #1f2430; border: 2px solid transparent; transition: border-color .2s; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; overflow: visible; }
+.route-card { background: #d1d6e4; width: 500px; min-height: 230px; padding: 20px 16px; margin-bottom: 20px; cursor: pointer; color: #1f2430; border: 2px solid transparent; border-radius: 10px; transition: border-color .2s; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; overflow: visible; }
 .route-card:last-child { margin-bottom: 0; }
-.route-card.active { border-color: #2b569a; }
-.card-top { display: flex; justify-content: space-between; align-items: baseline; }
-.card-time { font-size: 36px; font-weight: 800; line-height: 1; }
+.route-card.active { border-color: #2b569a; background: #e2e7f3; }
+.card-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.card-time { font-size: 32px; font-weight: 800; line-height: 1; }
 .card-time small { font-size: 14px; font-weight: 700; margin-left: 2px; }
-.card-score { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 4px; overflow: visible; position: relative; }
+.card-score { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; overflow: visible; position: relative; }
 .star { color: #f1b418; font-size: 15px; }
 .warn { color: #e53935; font-size: 15px; }
 
-/* 경로 세그먼트 바 양 끝 둥글게 양식 유지 */
-.route-segment-bar { display: flex; gap: 6px; height: 8px; margin-bottom: 12px; }
+/* 경로 유형 뱃지 */
+.type-badge { font-size: 11px; padding: 2px 6px; border-radius: 4px; color: #fff; font-weight: 700; }
+.type-badge.subway { background: #0052A4; }
+.type-badge.bus { background: #33A23D; }
+.type-badge.mixed { background: #7B1FA2; }
+
+/* 경로 세그먼트 바 */
+.route-segment-bar { display: flex; gap: 4px; height: 8px; margin-bottom: 12px; border-radius: 4px; overflow: hidden; background: #bbc1d0; }
 .segment { height: 100%; }
-.segment:first-child { border-radius: 4px 0 0 4px; }
-.segment:last-child { border-radius: 0 4px 4px 0; }
 
 .card-body { display: flex; justify-content: space-between; gap: 12px; }
 .card-left { flex: 1.3; min-width: 0; }
-.card-detail-line { font-size: 12px; line-height: 1.7; white-space: nowrap; font-weight: 600; }
-.card-right { flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; padding-top: 2px; }
-.card-right-row { display: flex; gap: 12px; }
-.line-label { width: 55px; flex-shrink: 0; }
+.card-detail-line { font-size: 12px; line-height: 1.7; white-space: nowrap; font-weight: 600; color: #3a4156; }
+.card-right { flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; padding-top: 2px; border-left: 1px solid #bbc1d0; padding-left: 10px; justify-content: center; }
+.card-right-row { display: flex; gap: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.line-label { font-weight: 700; flex-shrink: 0; }
 
-/* 윤서영 추가 - 툴팁 */
+/* 툴팁 */
+.tooltip-wrap { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
 .tooltip-wrap .tooltip-box {
   display: none;
   position: absolute;
@@ -122,9 +134,9 @@ html, body { width: 100vw; height: 100vh; overflow: hidden; background: #111c2e;
 
 .timeline-item {
   position: relative;
-  padding-bottom: 45px;
+  padding-bottom: 24px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.25);
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 .timeline-item:last-child {
   padding-bottom: 0;
@@ -138,6 +150,7 @@ html, body { width: 100vw; height: 100vh; overflow: hidden; background: #111c2e;
 .tl-content { padding-left: 4px; color: #ffffff; }
 .tl-name { font-size: 14px; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 4px; }
 .tl-sub { font-size: 12px; color: #e2e8f0; margin-top: 6px; line-height: 1.6; font-weight: 500; }
+.loading-text { color: #ffffff; padding: 30px; text-align: center; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -148,16 +161,34 @@ html, body { width: 100vw; height: 100vh; overflow: hidden; background: #111c2e;
 
       <div class="search-container">
         <div class="search-inputs">
-            <div class="search-line"><span class="dot red"></span><div class="search-row"><input class="search-input" value="" readonly></div></div>
-            <div class="search-line"><span class="dot green"></span><div class="search-row"><input class="search-input" value="" readonly></div></div>
+            <div class="search-line">
+              <span class="dot red"></span>
+              <div class="search-row"><input class="search-input" id="origin-input" placeholder="출발지" readonly></div>
+            </div>
+            <div class="search-line">
+              <span class="dot green"></span>
+              <div class="search-row"><input class="search-input" id="dest-input" placeholder="목적지" readonly></div>
+            </div>
         </div>
-        <button class="search-btn"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></button>
+        <button class="search-btn" onclick="onSearchClick()" title="경로 검색">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
       </div>
 
-      <div class="depart-row"><span>추천출발 시간</span><span class="time-val">오전 9:00</span></div>
+      <div class="depart-row">
+        <span>추천 출발 시간</span>
+        <span class="time-val" id="optimal-time-display">--:--</span>
+      </div>
 
-      <!-- 백엔드 데이터를 기반으로 동적 생성되는 카드가 삽입될 영역 -->
-      <div id="cards-container"></div>
+      <div class="tab-container">
+        <button class="tab-btn active" onclick="filterTab('subway', this)">지하철</button>
+        <button class="tab-btn" onclick="filterTab('mixed', this)">지하철+버스</button>
+        <button class="tab-btn" onclick="filterTab('bus', this)">버스</button>
+      </div>
+
+      <div id="cards-container">
+        <div class="loading-text">경로 데이터를 불러오는 중입니다...</div>
+      </div>
 
     </div>
   </div>
@@ -183,86 +214,107 @@ html, body { width: 100vw; height: 100vh; overflow: hidden; background: #111c2e;
 </div>
 
 <script>
-/*윤서영 추가 - 백엔드 연결*/
-
-/* 호선 색상 매핑*/
+/* 호선 색상 매핑 */
 const LINE_COLORS = {
   '1호선': '#0052A4', '2호선': '#00A84D', '3호선': '#EF7C1C',
   '4호선': '#00A5DE', '5호선': '#996CAC', '6호선': '#CD7C2F',
   '7호선': '#747F00', '8호선': '#E6186C', '9호선': '#BDB092',
   '수인분당선': '#F5A200', '신분당선': '#D4003B', '경의중앙선': '#77C4A3',
 };
+
 function getLineColor(line) {
-  return LINE_COLORS[line] || '#888888';
+  if (!line) return '#33A23D';
+  for (const key in LINE_COLORS) {
+    if (line.includes(key)) return LINE_COLORS[key];
+  }
+  return '#33A23D';
 }
 
-/* 오전/오후 표시*/
+/* 오전/오후 표시 */
 function formatAmPm(hhmm) {
-  const [h, m] = hhmm.split(':').map(Number);
+  if (!hhmm) return '--:--';
+  const parts = hhmm.split(':');
+  if (parts.length < 2) return hhmm;
+  const h = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10);
   const ampm = h < 12 ? '오전' : '오후';
   const hour = h === 0 ? 12 : h > 12 ? h - 12 : h;
   return `${ampm} ${hour}:${String(m).padStart(2, '0')}`;
 }
 
-/* 백엔드 응답 → 카드 렌더링용 포맷 변환*/
+/* 백엔드 응답 → 카드 렌더링용 포맷 변환 (data_pipeline 구조 반영) */
 function convertRoute(r) {
-  const score     = Math.round(r.comfort_score);
+  const score     = Math.round(r.comfort_score || 0);
   const isStar    = score >= 60;
   const scoreText = `${score}점`;
-  const duration  = Math.round(r.total_sec / 60);
+  const duration  = Math.round((r.total_sec || 0) / 60);
 
-  // ── 호선 목록 추출 (중복 제거, 순서 유지) ──
+  const routeType = r.route_type || 'subway';
+  const subLegs   = r.cong_detail || [];
+  const mapSegs   = r.map_segments || [];
+
   const lines = [];
   const seen  = new Set();
-  (r.cong_detail || []).forEach(seg => {
+  subLegs.forEach(seg => {
     if (seg.line && !seen.has(seg.line)) {
       seen.add(seg.line);
       lines.push(seg.line);
     }
   });
 
-  // ── 세그먼트 바 (호선별 균등 배분) ──
-  const segmentBar = lines.map(line => ({
-    color: getLineColor(line),
-    flex:  Math.round(10 / Math.max(lines.length, 1)),
-  }));
+  if (lines.length === 0) {
+    lines.push('버스 노선');
+  }
 
-  // ── 우측 노선 요약 ──
-  const rightSummary = lines.map((line, i) => {
-    const firstSeg = (r.cong_detail || []).find(s => s.line === line);
+  const transitSegs = mapSegs.filter(s => !s.dash);
+  let segmentBar = [];
+  if (transitSegs.length > 0) {
+    segmentBar = transitSegs.map(s => ({ color: s.color || '#33A23D', flex: 1 }));
+  } else {
+    segmentBar = lines.map(line => ({
+      color: getLineColor(line),
+      flex:  Math.round(10 / Math.max(lines.length, 1)),
+    }));
+  }
+
+  const rightSummary = lines.map(line => {
+    const firstSeg = subLegs.find(s => s.line === line);
     return {
       line,
       color:   getLineColor(line),
-      station: firstSeg ? firstSeg.station_name : '',
+      station: firstSeg ? firstSeg.station_name : '탑승',
     };
   });
 
-  // ── 상세 타임라인 ──
-  const detail = r.cong_detail || [];
   const timeline = [];
+  timeline.push({ title: `${subLegs[0]?.station_name || '출발지'} (출발)` });
 
-  // 출발지
-  timeline.push({ title: `${detail[0]?.station_name || '출발지'} (출발)` });
+  if (subLegs.length > 0) {
+    subLegs.slice(1, -1).forEach(seg => {
+      const cong     = seg.congestion != null ? seg.congestion : null;
+      const seating  = cong != null
+        ? (cong <= 33.8 ? 1.0 : Math.round(33.8 / cong * 100) / 100)
+        : null;
+      const warn     = cong != null && cong >= 80
+        ? '<span style="color:#e53935;font-size:11px">⚠️</span>' : '';
 
-  // 중간 역
-  detail.slice(1, -1).forEach(seg => {
-    const cong     = seg.congestion != null ? seg.congestion : null;
-    const seating  = cong != null
-      ? (cong <= 33.8 ? 1.0 : Math.round(33.8 / cong * 100) / 100)
-      : null;
-    const warn     = cong != null && cong >= 80
-      ? '<span style="color:#e53935;font-size:11px">⚠️</span>' : '';
-
-    timeline.push({
-      title: `${seg.station_name} (${seg.line}) ${warn}`,
-      sub1:  cong    != null ? `혼잡도 : ${cong.toFixed(1)}` : '혼잡도 : 데이터 없음',
-      sub2:  seating != null ? `착석가능지수 : ${seating.toFixed(2)}` : '',
+      timeline.push({
+        title: `${seg.station_name} (${seg.line}) ${warn}`,
+        sub1:  cong    != null ? `혼잡도 : ${cong.toFixed(1)}%` : '혼잡도 : 데이터 없음',
+        sub2:  seating != null ? `착석가능지수 : ${seating.toFixed(2)}` : '',
+      });
     });
-  });
 
-  // 도착지
-  if (detail.length > 1) {
-    timeline.push({ title: `${detail[detail.length - 1].station_name} (도착)`, isEnd: true });
+    if (subLegs.length > 1) {
+      timeline.push({ title: `${subLegs[subLegs.length - 1].station_name} (도착)`, isEnd: true });
+    }
+  } else {
+    timeline.push({
+      title: '버스 구간 이동',
+      sub1: `도보시간: 약 ${Math.round((r.walk_sec || 0) / 60)}분`,
+      sub2: `환승 횟수: ${r.transfer_count || 0}회`,
+    });
+    timeline.push({ title: '목적지 도착', isEnd: true });
   }
 
   const originCoord = JSON.parse(sessionStorage.getItem('originCoord') || 'null');
@@ -272,68 +324,62 @@ function convertRoute(r) {
     duration,
     scoreText,
     isStar,
+    routeType,
     detailInfo: {
       time:     `소요시간 : ${duration}분`,
-      walk:     `도보시간 : ${Math.round(r.walk_sec / 60)}분`,
-      fare:     `요금 : ${r.fare?.toLocaleString() || 0}원`,
-      transfer: `환승횟수 : ${r.transfer_count}회`,
-      facility: `이동편의시설 점수 : ${(r.facility_score * 100).toFixed(0)}점`,
+      walk:     `도보시간 : ${Math.round((r.walk_sec || 0) / 60)}분`,
+      fare:     `요금 : ${r.fare ? r.fare.toLocaleString() : 0}원`,
+      transfer: `환승횟수 : ${r.transfer_count || 0}회`,
+      facility: `이동편의시설 점수 : ${((r.facility_score || 0.5) * 100).toFixed(0)}점`,
     },
     rightSummary,
     segmentBar,
-    start:    originCoord ? [originCoord.lat, originCoord.lon] : [37.5547, 126.9707],
-    end:      destCoord   ? [destCoord.lat,   destCoord.lon]   : [37.4979, 127.0276],
-    stations: [],
-    segments: r.map_segments || [],
+    mapSegments: mapSegs,
+    segments: mapSegs,
+    start: originCoord ? [originCoord.lat, originCoord.lon] : [37.5547, 126.9707],
+    end:   destCoord   ? [destCoord.lat,   destCoord.lon]   : [37.4979, 127.0276],
     timeline,
-    // 원본 데이터 보존
     _raw: r,
   };
 }
 
-/* sessionStorage에서 데이터 로드*/
-let apiData    = [];
-let currentIdx = 0;
+/* 데이터 및 탭 필터링 변수 (초기값: subway) */
+let apiData       = [];
+let currentIdx    = 0;
+let currentFilter = 'subway';
 
-document.addEventListener('DOMContentLoaded', function() {
-  const raw         = sessionStorage.getItem('routes');
-  const optimalTime = sessionStorage.getItem('optimalTime') || '';
+function filterTab(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
 
-  if (!raw) {
-    document.getElementById('cards-container').innerHTML =
-      '<p style="color:#fff;padding:20px;">경로 데이터가 없습니다. 다시 검색해주세요.</p>';
-    return;
+  renderRouteCards();
+
+  const firstVisibleIndex = apiData.findIndex(matchesFilter);
+  if (firstVisibleIndex !== -1) {
+    updateMap(firstVisibleIndex);
   }
+}
 
-  // 백엔드 응답 → 카드 포맷 변환
-  const routes = JSON.parse(raw);
-  apiData = routes.map(convertRoute);
+function matchesFilter(item) {
+  return item.routeType === currentFilter;
+}
 
-const originStr = sessionStorage.getItem('origin');
-const destStr   = sessionStorage.getItem('destination');
-
-const inputs = document.querySelectorAll('.search-input');
-if (originStr && inputs[0]) inputs[0].value = originStr;
-if (destStr   && inputs[1]) inputs[1].value = destStr;
-
-  // 추천 출발 시간 표시
-  if (optimalTime) {
-    const timeEl = document.querySelector('.depart-row .time-val');
-    if (timeEl) timeEl.textContent = formatAmPm(optimalTime);
-  }
-});
-
-
-
-
-/* ── 1. 백엔드 데이터로 경로 추천 카드 목록 동적 렌더링 ── */
+/* 경로 추천 카드 목록 렌더링 */
 function renderRouteCards() {
   const container = document.getElementById('cards-container');
   let html = '';
 
   apiData.forEach((data, idx) => {
+    if (!matchesFilter(data)) return;
+
     const activeClass = idx === currentIdx ? 'active' : '';
-    // 툴팁 메시지 생성
+
+    let badgeText = '지하철';
+    let badgeClass = 'subway';
+    if (data.routeType === 'bus') { badgeText = '버스'; badgeClass = 'bus'; }
+    else if (data.routeType === 'mixed') { badgeText = '버스+지하철'; badgeClass = 'mixed'; }
+
     const starMsg = (data._raw && data._raw.avg_congestion != null)
       ? ('쾌적도 최고 경로 (평균 혼잡도 ' + data._raw.avg_congestion.toFixed(1) + '%)')
       : '쾌적도 최고 경로';
@@ -347,15 +393,12 @@ function renderRouteCards() {
     const scoreIcon = data.isStar
       ? '<span class="tooltip-wrap"><span class="star">★</span><span class="tooltip-box">' + starMsg + '</span></span>'
       : '<span class="tooltip-wrap"><span class="warn">⚠️</span><span class="tooltip-box">' + warnMsg + '</span></span>';
-    
 
-    // 세그먼트 바 HTML 생성
     let barHtml = '';
     data.segmentBar.forEach(bar => {
       barHtml += `<div class="segment" style="background:${bar.color}; flex:${bar.flex};"></div>`;
     });
 
-    // 우측 지하철 노선 요약 HTML 생성
     let rightHtml = '';
     data.rightSummary.forEach(row => {
       rightHtml += `
@@ -370,7 +413,10 @@ function renderRouteCards() {
       <div class="route-card ${activeClass}" id="card-${idx}" onclick="showDetail(${idx})" onmouseenter="updateMap(${idx})">
         <div class="card-top">
           <div class="card-time">${data.duration}<small>분</small></div>
-          <div class="card-score">쾌적도 점수 : ${data.scoreText} ${scoreIcon}</div>
+          <div class="card-score">
+            <span class="type-badge ${badgeClass}">${badgeText}</span>
+            쾌적도 점수 : ${data.scoreText} ${scoreIcon}
+          </div>
         </div>
         <div class="route-segment-bar">${barHtml}</div>
         <div class="card-body">
@@ -389,26 +435,163 @@ function renderRouteCards() {
     `;
   });
 
-  container.innerHTML = html || '<p style="color:#fff;padding:20px;">경로를 찾을 수 없습니다.</p>';
+  container.innerHTML = html || '<div class="loading-text">해당 유형의 추천 경로가 없습니다.</div>';
 }
 
-/* ── 2. 지도 동적 업데이트 함수 ── */
-function updateMap(idx) {
-  currentIdx = idx;
-  document.querySelectorAll('.route-card').forEach((c, i) => {
-    c.classList.toggle('active', i === idx);
-  });
+/* sessionStorage에서 데이터를 불러와 렌더링 */
+function loadFromSessionStorage() {
+  const rawRoutes   = sessionStorage.getItem('routes');
+  const optimalTime = sessionStorage.getItem('optimalTime');
+  const origin      = sessionStorage.getItem('origin');
+  const destination = sessionStorage.getItem('destination');
 
-  const iframe = document.getElementById('map-recommend');
-  if (iframe && iframe.contentWindow) {
-    iframe.contentWindow.postMessage({
-      type: 'DRAW_ROUTE',
-      payload: apiData[idx]
-    }, '*');
+  // 출발/도착지 이름 표시
+  if (origin)      document.getElementById('origin-input').value = origin;
+  if (destination) document.getElementById('dest-input').value   = destination;
+
+  // 추천 출발 시간 표시
+  if (optimalTime) {
+    document.getElementById('optimal-time-display').textContent = formatAmPm(optimalTime);
+  }
+
+  // 경로 데이터 파싱 및 렌더링
+  if (rawRoutes) {
+    try {
+      const routes = JSON.parse(rawRoutes);
+      if (Array.isArray(routes) && routes.length > 0) {
+        apiData = routes.map(convertRoute);
+        renderRouteCards();
+
+        const firstVisibleIndex = apiData.findIndex(matchesFilter);
+        if (firstVisibleIndex !== -1) updateMap(firstVisibleIndex);
+        return true; // 성공적으로 로드
+      }
+    } catch (e) {
+      console.error('sessionStorage 파싱 오류:', e);
+    }
+  }
+  return false; // 데이터 없음
+}
+
+/* 검색 기능 (재검색 또는 sessionStorage 데이터가 없을 때 fallback) */
+async function onSearchClick() {
+  const originName = document.getElementById('origin-input').value.trim();
+  const destName   = document.getElementById('dest-input').value.trim();
+
+  if (!originName || !destName) {
+    alert('출발지와 목적지를 입력해주세요.');
+    return;
+  }
+
+  document.getElementById('cards-container').innerHTML = '<div class="loading-text">경로를 탐색 중입니다...</div>';
+
+  try {
+    const [geoOrigin, geoDest] = await Promise.all([
+      fetch(`/api/geocode?q=${encodeURIComponent(originName)}`).then(r => r.json()),
+      fetch(`/api/geocode?q=${encodeURIComponent(destName)}`).then(r => r.json())
+    ]);
+
+    if (geoOrigin.error || geoDest.error) {
+      alert('장소를 찾을 수 없습니다.');
+      return;
+    }
+
+    sessionStorage.setItem('originCoord', JSON.stringify({ lat: geoOrigin.lat, lon: geoOrigin.lon }));
+    sessionStorage.setItem('destCoord', JSON.stringify({ lat: geoDest.lat, lon: geoDest.lon }));
+
+    const nowIso = new Date().toISOString().substring(0, 19);
+
+    const searchRes = await fetch('/api/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        origin_lat: geoOrigin.lat,
+        origin_lon: geoOrigin.lon,
+        dest_lat:   geoDest.lat,
+        dest_lon:   geoDest.lon,
+        depart_dt:  nowIso
+      })
+    });
+
+    const routes = await searchRes.json();
+
+    if (searchRes.status !== 200 || !Array.isArray(routes) || routes.length === 0) {
+      document.getElementById('cards-container').innerHTML = '<div class="loading-text">경로를 찾을 수 없습니다.</div>';
+      return;
+    }
+
+    apiData = routes.map(convertRoute);
+    renderRouteCards();
+
+    const firstVisibleIndex = apiData.findIndex(matchesFilter);
+    if (firstVisibleIndex !== -1) updateMap(firstVisibleIndex);
+
+    const nowHours = new Date().getHours();
+    fetch('/api/optimal-time', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        routes: routes,
+        target_date: nowIso,
+        start_time: `${String(nowHours).padStart(2, '0')}시00분`,
+        end_time: `${String((nowHours + 2) % 24).padStart(2, '0')}시00분`,
+        target: 'best'
+      })
+    })
+    .then(r => r.json())
+    .then(optData => {
+      if (optData.optimal_time) {
+        document.getElementById('optimal-time-display').textContent = formatAmPm(optData.optimal_time);
+      }
+    })
+    .catch(() => {});
+
+  } catch (err) {
+    console.error('검색 오류:', err);
+    document.getElementById('cards-container').innerHTML = '<div class="loading-text">경로 탐색 중 오류가 발생했습니다.</div>';
   }
 }
 
-/* ── 3. 상세 페이지 타임라인 동적 렌더링 ── */
+function updateMap(idx) {
+  currentIdx = idx;
+  document.querySelectorAll('.route-card').forEach((c) => {
+    const cardIdx = parseInt(c.id.replace('card-', ''), 10);
+    c.classList.toggle('active', cardIdx === idx);
+  });
+
+  if (!apiData[idx]) return;
+
+  const targetData = apiData[idx];
+  const mapSegs = targetData.mapSegments || targetData.segments || (targetData._raw ? targetData._raw.map_segments : []) || [];
+  const originCoord = JSON.parse(sessionStorage.getItem('originCoord') || 'null');
+  const destCoord   = JSON.parse(sessionStorage.getItem('destCoord')   || 'null');
+
+  const payloadData = {
+    ...targetData,
+    segments: mapSegs,
+    map_segments: mapSegs,
+    start: originCoord ? [originCoord.lat, originCoord.lon] : [37.5547, 126.9707],
+    end:   destCoord   ? [destCoord.lat,   destCoord.lon]   : [37.4979, 127.0276],
+  };
+
+  const msg = {
+    type: 'DRAW_ROUTE',
+    payload: payloadData,
+    map_segments: mapSegs,
+    segments: mapSegs
+  };
+
+  const iframeRecommend = document.getElementById('map-recommend');
+  const iframeDetail    = document.getElementById('map-detail');
+
+  if (iframeRecommend && iframeRecommend.contentWindow) {
+    iframeRecommend.contentWindow.postMessage(msg, '*');
+  }
+  if (iframeDetail && iframeDetail.contentWindow) {
+    iframeDetail.contentWindow.postMessage(msg, '*');
+  }
+}
+
 function renderTimeline(idx) {
   const container = document.getElementById('timeline-container');
   let html = '';
@@ -432,16 +615,15 @@ function renderTimeline(idx) {
 }
 
 function onMapLoaded() {
-  // apiData가 준비됐을 때만 실행
-  if (apiData.length > 0) {
-    renderRouteCards();
-    updateMap(0);
+  const loaded = loadFromSessionStorage();
+  if (!loaded) {
+    console.warn('sessionStorage에 경로 데이터가 없어 재검색합니다.');
+    onSearchClick();
   } else {
-    // DOMContentLoaded보다 먼저 실행된 경우 잠깐 기다림
     setTimeout(() => {
-      renderRouteCards();
-      updateMap(0);
-    }, 100);
+      const firstVisibleIndex = apiData.findIndex(matchesFilter);
+      if (firstVisibleIndex !== -1) updateMap(firstVisibleIndex);
+    }, 150);
   }
 }
 
@@ -453,11 +635,7 @@ function showDetail(idx) {
   document.getElementById('page-detail').classList.remove('hidden');
 
   setTimeout(() => {
-    const detailIframe = document.getElementById('map-detail');
-    detailIframe.contentWindow.postMessage({
-      type: 'DRAW_ROUTE',
-      payload: apiData[idx]
-    }, '*');
+    updateMap(idx);
   }, 100);
 }
 
