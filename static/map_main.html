@@ -165,56 +165,54 @@ window.addEventListener('message', function(e) {
     }
 });
 
-
-// 역 마커를 담을 레이어 그룹 생성
+//역마커 
 var stationLayer = L.layerGroup().addTo(map_2b04476b0ff190314cae6b7c1d9f023a);
+    var stationDataCache = []; // JSON 내 DATA 배열 저장용
 
-function loadStationsInBounds() {
-    // 지도 좌표 범위 가져오기
-    var bounds = map_2b04476b0ff190314cae6b7c1d9f023a.getBounds();
-    if (!bounds || !bounds.isValid()) return; // 범위가 유효하지 않으면 중단
+    function renderSubwayStations() {
+        if (!stationDataCache.length) return;
 
-    var bbox = bounds.getSouth() + ',' + bounds.getWest() + ',' + bounds.getNorth() + ',' + bounds.getEast();
+        stationLayer.clearLayers();
+        var bounds = map_2b04476b0ff190314cae6b7c1d9f023a.getBounds();
 
-    var query = `[out:json][timeout:10];(node["railway"="station"](${bbox});node["station"="subway"](${bbox}););out;`;
-    var url =  'https://overpass.kumi.systems/api/interpreter?data=' + encodeURIComponent(query);
+        stationDataCache.forEach(function(st) {
+            var lat = parseFloat(st.lat);
+            var lon = parseFloat(st.lot);     // 데이터셋 경도 필드: lot
+            var name = st.bldn_nm;            // 데이터셋 역사명 필드: bldn_nm
 
-    fetch(url)
-        .then(response => {
-            if (!response.ok) throw new Error('API 응답 오류: ' + response.status);
-            return response.json();
-        })
-        .then(data => {
-            stationLayer.clearLayers(); // 기존 마커 초기화
-            
-            data.elements.forEach(function(el) {
-                var stationName = el.tags.name || '역';
-                
-                var marker = L.circleMarker([el.lat, el.lon], {
+            // 현재 화면 내에 위치한 역만 즉시 그려서 렉 방지
+            if (lat && lon && bounds.contains([lat, lon])) {
+                var marker = L.circleMarker([lat, lon], {
                     radius: 7,
                     color: '#ffffff',
                     weight: 2.5,
                     fillColor: '#00A2FF',
                     fillOpacity: 0.95
-                }).bindTooltip(stationName, { 
-                    permanent: true, 
-                    direction: 'top', 
+                }).bindTooltip(name, {
+                    permanent: true,
+                    direction: 'top',
                     offset: [0, -8],
                     className: 'station-label'
                 });
 
                 stationLayer.addLayer(marker);
-            });
+            }
+        });
+    }
+
+    // stations.json 로드
+    fetch('./stations.json')
+        .then(function(res) { return res.json(); })
+        .then(function(json) {
+            // 상위 데이터 구조의 DATA 배열 추출
+            stationDataCache = json.DATA || json.data || [];
+            renderSubwayStations(); // 첫 화면 마커 렌더링
         })
-        .catch(err => console.error('역 데이터 불러오기 실패:', err));
-}
+        .catch(function(err) {
+            console.error("stations.json 로드 실패:", err);
+        });
 
-// 지도 이동/줌 완료 시 이벤트 연결
-map_2b04476b0ff190314cae6b7c1d9f023a.on('moveend', loadStationsInBounds);
-
-// 지도 준비 완료 시 최초 1회 실행
-map_2b04476b0ff190314cae6b7c1d9f023a.whenReady(function() {
-    loadStationsInBounds();
-});
+    // 지도 이동 및 확대/축소 시 0.001초 만에 화면 범위 안의 역 다시 계산
+    map_2b04476b0ff190314cae6b7c1d9f023a.on('moveend', renderSubwayStations);
 </script>
 </html>
