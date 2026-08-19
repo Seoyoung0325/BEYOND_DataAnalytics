@@ -164,5 +164,57 @@ window.addEventListener('message', function(e) {
         clickState = 'origin';
     }
 });
+
+
+// 역 마커를 담을 레이어 그룹 생성
+var stationLayer = L.layerGroup().addTo(map_2b04476b0ff190314cae6b7c1d9f023a);
+
+function loadStationsInBounds() {
+    // 지도 좌표 범위 가져오기
+    var bounds = map_2b04476b0ff190314cae6b7c1d9f023a.getBounds();
+    if (!bounds || !bounds.isValid()) return; // 범위가 유효하지 않으면 중단
+
+    var bbox = bounds.getSouth() + ',' + bounds.getWest() + ',' + bounds.getNorth() + ',' + bounds.getEast();
+
+    var query = `[out:json][timeout:10];(node["railway"="station"](${bbox});node["station"="subway"](${bbox}););out;`;
+    var url =  'https://overpass.kumi.systems/api/interpreter?data=' + encodeURIComponent(query);
+
+    fetch(url)
+        .then(response => {
+            if (!response.ok) throw new Error('API 응답 오류: ' + response.status);
+            return response.json();
+        })
+        .then(data => {
+            stationLayer.clearLayers(); // 기존 마커 초기화
+            
+            data.elements.forEach(function(el) {
+                var stationName = el.tags.name || '역';
+                
+                var marker = L.circleMarker([el.lat, el.lon], {
+                    radius: 7,
+                    color: '#ffffff',
+                    weight: 2.5,
+                    fillColor: '#00A2FF',
+                    fillOpacity: 0.95
+                }).bindTooltip(stationName, { 
+                    permanent: true, 
+                    direction: 'top', 
+                    offset: [0, -8],
+                    className: 'station-label'
+                });
+
+                stationLayer.addLayer(marker);
+            });
+        })
+        .catch(err => console.error('역 데이터 불러오기 실패:', err));
+}
+
+// 지도 이동/줌 완료 시 이벤트 연결
+map_2b04476b0ff190314cae6b7c1d9f023a.on('moveend', loadStationsInBounds);
+
+// 지도 준비 완료 시 최초 1회 실행
+map_2b04476b0ff190314cae6b7c1d9f023a.whenReady(function() {
+    loadStationsInBounds();
+});
 </script>
 </html>
