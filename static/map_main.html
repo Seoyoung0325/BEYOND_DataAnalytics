@@ -164,5 +164,55 @@ window.addEventListener('message', function(e) {
         clickState = 'origin';
     }
 });
+
+//역마커 
+var stationLayer = L.layerGroup().addTo(map_2b04476b0ff190314cae6b7c1d9f023a);
+    var stationDataCache = []; // JSON 내 DATA 배열 저장용
+
+    function renderSubwayStations() {
+        if (!stationDataCache.length) return;
+
+        stationLayer.clearLayers();
+        var bounds = map_2b04476b0ff190314cae6b7c1d9f023a.getBounds();
+
+        stationDataCache.forEach(function(st) {
+            var lat = parseFloat(st.lat);
+            var lon = parseFloat(st.lot);     // 데이터셋 경도 필드: lot
+            var name = st.bldn_nm;            // 데이터셋 역사명 필드: bldn_nm
+
+            // 현재 화면 내에 위치한 역만 즉시 그려서 렉 방지
+            if (lat && lon && bounds.contains([lat, lon])) {
+                var marker = L.circleMarker([lat, lon], {
+                    radius: 7,
+                    color: '#ffffff',
+                    weight: 2.5,
+                    fillColor: '#00A2FF',
+                    fillOpacity: 0.95
+                }).bindTooltip(name, {
+                    permanent: true,
+                    direction: 'top',
+                    offset: [0, -8],
+                    className: 'station-label'
+                });
+
+                stationLayer.addLayer(marker);
+            }
+        });
+    }
+
+    // stations.json 로드
+    fetch('./stations.json')
+        .then(function(res) { return res.json(); })
+        .then(function(json) {
+            // 상위 데이터 구조의 DATA 배열 추출
+            stationDataCache = json.DATA || json.data || [];
+            renderSubwayStations(); // 첫 화면 마커 렌더링
+        })
+        .catch(function(err) {
+            console.error("stations.json 로드 실패:", err);
+        });
+
+    // 지도 이동 및 확대/축소 시 0.001초 만에 화면 범위 안의 역 다시 계산
+    map_2b04476b0ff190314cae6b7c1d9f023a.on('moveend', renderSubwayStations);
 </script>
 </html>
