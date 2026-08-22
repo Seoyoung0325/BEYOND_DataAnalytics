@@ -79,12 +79,11 @@ html, body { width: 100vw; height: 100vh; overflow: hidden; background: #111c2e;
 .line-label { font-weight: 700; flex-shrink: 0; }
 
 /* 툴팁 */
-.tooltip-wrap { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
-.tooltip-wrap .tooltip-box {
+.tooltip-wrap { display: inline-flex; align-items: center; cursor: pointer; }
+#global-tooltip {
   display: none;
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
+  position: fixed;
+  z-index: 99999;
   transform: translateX(-50%);
   background: #1f2430;
   color: #fff;
@@ -93,11 +92,10 @@ html, body { width: 100vw; height: 100vh; overflow: hidden; background: #111c2e;
   padding: 6px 10px;
   border-radius: 6px;
   white-space: nowrap;
-  z-index: 100;
   pointer-events: none;
   box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
-.tooltip-wrap .tooltip-box::after {
+#global-tooltip::after {
   content: '';
   position: absolute;
   top: 100%;
@@ -106,7 +104,6 @@ html, body { width: 100vw; height: 100vh; overflow: hidden; background: #111c2e;
   border: 5px solid transparent;
   border-top-color: #1f2430;
 }
-.tooltip-wrap:hover .tooltip-box { display: block; }
 
 /* ── 우측 지도 화면 ── */
 .map-area { flex: 1; height: 100vh; position: relative; background: #29436d; }
@@ -391,8 +388,8 @@ function renderRouteCards() {
     const warnMsg = warnSegs.length > 0 ? ('혼잡구간 포함 (' + warnNames + ' 등)') : '주의 경로';
 
     const scoreIcon = data.isStar
-      ? '<span class="tooltip-wrap"><span class="star">★</span><span class="tooltip-box">' + starMsg + '</span></span>'
-      : '<span class="tooltip-wrap"><span class="warn">⚠️</span><span class="tooltip-box">' + warnMsg + '</span></span>';
+      ? '<span class="tooltip-wrap" data-tip="' + starMsg + '"><span class="star">★</span></span>'
+      : '<span class="tooltip-wrap" data-tip="' + warnMsg + '"><span class="warn">⚠️</span></span>';
 
     let barHtml = '';
     data.segmentBar.forEach(bar => {
@@ -643,6 +640,47 @@ function goBack() {
   document.getElementById('page-detail').classList.add('hidden');
   document.getElementById('page-recommend').classList.remove('hidden');
 }
+</script>
+
+<!-- 전역 툴팁 레이어 -->
+<div id="global-tooltip"></div>
+<script>
+(function() {
+  var tip = document.getElementById('global-tooltip');
+
+  document.addEventListener('mouseover', function(e) {
+    var wrap = e.target.closest('.tooltip-wrap');
+    if (!wrap) return;
+    var msg = wrap.getAttribute('data-tip');
+    if (!msg) return;
+
+    tip.textContent = msg;
+    tip.style.display = 'block';
+
+    // 위치 계산
+    var rect  = wrap.getBoundingClientRect();
+    var tipW  = tip.offsetWidth;
+    var tipH  = tip.offsetHeight;
+    var left  = rect.left + rect.width / 2;
+    var top   = rect.top - tipH - 10;
+
+    // 화면 우측 잘림 방지
+    if (left + tipW / 2 > window.innerWidth - 8)
+      left = window.innerWidth - tipW / 2 - 8;
+    // 화면 좌측 잘림 방지
+    if (left - tipW / 2 < 8)
+      left = tipW / 2 + 8;
+    // 화면 상단 잘림 방지 → 아래로 표시
+    if (top < 8) top = rect.bottom + 10;
+
+    tip.style.left = left + 'px';
+    tip.style.top  = top  + 'px';
+  });
+
+  document.addEventListener('mouseout', function(e) {
+    if (e.target.closest('.tooltip-wrap')) tip.style.display = 'none';
+  });
+})();
 </script>
 </body>
 </html>
