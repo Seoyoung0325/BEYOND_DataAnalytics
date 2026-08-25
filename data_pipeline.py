@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-TMAP_API_KEY = os.getenv('TMAP_API_KEY_psy')
+TMAP_API_KEY = os.getenv('TMAP_API_KEY_ysy3')
 
 
 

@@ -69,10 +69,26 @@ function setLoading(on) {
     overlay.innerHTML = `
       <div style="
         position:fixed; inset:0; background:rgba(0,0,0,0.5);
-        display:flex; align-items:center; justify-content:center;
-        z-index:9999; color:#fff; font-size:36px; font-weight:600;
-        font-family:'Noto Sans KR',sans-serif;">
-        경로 탐색 중...
+        display:flex; flex-direction:column; align-items:center; justify-content:center;
+        z-index:9999; font-family:'Noto Sans KR',sans-serif;">
+        <!-- 메인 문구 -->
+        <div style="color:#fff; font-size:28px; font-weight:700; margin-bottom:16px;">
+          경로 탐색 중...
+        </div>
+        <!-- 워터마크 서비스명 -->
+        <div style="
+          color:rgba(255, 255, 255, 0.37);
+          font-size:96px;
+          font-weight:900;
+          letter-spacing:0.08em;
+          user-select:none;
+          position:absolute;
+          bottom:35%;
+          left:50%;
+          transform:translateX(-50%);
+          white-space:nowrap;">
+          여유로
+        </div>
       </div>`;
     document.body.appendChild(overlay);
   }
